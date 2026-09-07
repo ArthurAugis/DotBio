@@ -136,6 +136,19 @@
             @endif
         }
 
+        @php
+            $tooltipHex = ltrim($profile->social_tooltip_bg_color ?: '#0a0a0c', '#');
+            if (strlen($tooltipHex) === 3) {
+                $tooltipHex = $tooltipHex[0].$tooltipHex[0].$tooltipHex[1].$tooltipHex[1].$tooltipHex[2].$tooltipHex[2];
+            }
+            $tooltipR = hexdec(substr($tooltipHex, 0, 2));
+            $tooltipG = hexdec(substr($tooltipHex, 2, 2));
+            $tooltipB = hexdec(substr($tooltipHex, 4, 2));
+            $tooltipA = $profile->social_tooltip_opacity ?? 0.92;
+            $tooltipBg = "rgba({$tooltipR},{$tooltipG},{$tooltipB},{$tooltipA})";
+            $tooltipBorder = $profile->social_tooltip_border_color ?: ($profile->accent_color ?? '#8b5cf6');
+        @endphp
+
         .social-item {
             position: relative;
             display: inline-flex;
@@ -150,9 +163,9 @@
             font-size: 11px;
             line-height: 1.4;
             white-space: nowrap;
-            background: rgba(10, 10, 12, 0.92);
-            color: #fafafa;
-            border: 1px solid {{ $profile->accent_color ?? '#8b5cf6' }};
+            background: {{ $tooltipBg }};
+            color: {{ $profile->social_tooltip_text_color ?: '#fafafa' }};
+            border: 1px solid {{ $tooltipBorder }};
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.45);
             opacity: 0;
             visibility: hidden;
@@ -167,7 +180,7 @@
             left: 50%;
             transform: translateX(-50%);
             border: 4px solid transparent;
-            border-top-color: {{ $profile->accent_color ?? '#8b5cf6' }};
+            border-top-color: {{ $tooltipBorder }};
         }
         .social-item:hover .social-tooltip,
         .social-item:focus-within .social-tooltip {
@@ -447,7 +460,9 @@
                                        class="icon-badge p-1 text-xl flex items-center justify-center transition cursor-pointer hover-anim-{{ $link->hover_effect ? $link->hover_effect : ($profile->socials_hover_effect ?? 'none') }}">
                                         <i class="{{ $link->icon_class }}" style="color: {{ $link->color ?: ($profile->icon_color ?: '#ffffff') }};"></i>
                                     </a>
-                                    <span class="social-tooltip">{{ $link->title }}</span>
+                                    @if($profile->show_social_tooltips ?? true)
+                                        <span class="social-tooltip">{{ $link->title }}</span>
+                                    @endif
                                 </span>
                             @endforeach
                         </div>

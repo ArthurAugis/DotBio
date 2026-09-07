@@ -59,6 +59,27 @@
         </div>
     </div>
 
+    <div class="space-y-2">
+        <div class="flex items-center justify-between p-2.5 bg-black/40 rounded-xl border border-white/5">
+            <span class="text-xs font-semibold text-zinc-300">Name Tooltip On Hover</span>
+            <input type="checkbox" x-model="profile.show_social_tooltips" class="accent-purple-500 w-4 h-4 cursor-pointer">
+        </div>
+
+        <div x-show="profile.show_social_tooltips" class="p-3 bg-[#09080d] rounded-2xl border border-purple-500/20 space-y-3">
+            <x-admin.color-picker model="profile.social_tooltip_bg_color" label="Tooltip Background" />
+
+            <div class="space-y-1">
+                <label class="text-zinc-400 font-semibold text-xs">Tooltip Background Opacity</label>
+                <input type="range" min="0" max="1" step="0.01" x-model="profile.social_tooltip_opacity" class="w-full accent-purple-500 cursor-pointer">
+                <span class="text-purple-400 font-mono text-xs" x-text="Math.round((profile.social_tooltip_opacity ?? 0.92) * 100) + '%'"></span>
+            </div>
+
+            <x-admin.color-picker model="profile.social_tooltip_text_color" label="Tooltip Text Color" />
+            <x-admin.color-picker model="profile.social_tooltip_border_color" label="Tooltip Border Color" />
+            <p class="text-[10px] text-zinc-500">Leave the border blank to follow the accent color.</p>
+        </div>
+    </div>
+
     <a href="{{ route('admin.links.index') }}" class="block py-2 bg-purple-600/20 hover:bg-purple-600/30 border border-purple-500/30 text-purple-300 rounded-xl text-center font-bold cursor-pointer">
         Manage Social Links (Snapchat, Youtube, Instagram...) →
     </a>

@@ -45,6 +45,10 @@ class UpdateCustomizationRequest extends FormRequest
             'username_effect' => ['nullable', 'string', 'max:50'],
             'username_glow_color' => ['nullable', 'string', 'max:50'],
             'socials_glow_color' => ['nullable', 'string', 'max:50'],
+            'social_tooltip_bg_color' => ['nullable', 'string', 'max:50'],
+            'social_tooltip_opacity' => ['nullable', 'numeric', 'min:0', 'max:1'],
+            'social_tooltip_text_color' => ['nullable', 'string', 'max:50'],
+            'social_tooltip_border_color' => ['nullable', 'string', 'max:50'],
 
             'bio_text_color' => ['nullable', 'string', 'max:20'],
             'bio_font_size' => ['nullable', 'integer', 'min:10', 'max:32'],

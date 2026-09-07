@@ -48,6 +48,7 @@ class CustomizeController extends Controller
         'avatar_glow',
         'glow_username',
         'glow_socials',
+        'show_social_tooltips',
         'typewriter_enabled',
         'bio_typewriter_enabled',
         'audio_glow',

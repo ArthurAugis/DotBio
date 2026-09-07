@@ -78,6 +78,11 @@ class Profile extends Model
         'glow_username',
         'username_glow_color',
         'glow_socials',
+        'show_social_tooltips',
+        'social_tooltip_bg_color',
+        'social_tooltip_opacity',
+        'social_tooltip_text_color',
+        'social_tooltip_border_color',
         'socials_glow_color',
 
         'bio_text_color',
@@ -193,6 +198,7 @@ class Profile extends Model
             'avatar_glow' => 'boolean',
             'glow_username' => 'boolean',
             'glow_socials' => 'boolean',
+            'show_social_tooltips' => 'boolean',
             'audio_enabled' => 'boolean',
             'audio_glow' => 'boolean',
             'discord_glow' => 'boolean',
@@ -205,6 +211,7 @@ class Profile extends Model
             'card_opacity' => 'float',
             'audio_opacity' => 'float',
             'discord_opacity' => 'float',
+            'social_tooltip_opacity' => 'float',
         ];
     }
 
