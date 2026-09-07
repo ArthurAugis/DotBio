@@ -118,6 +118,7 @@ class RunUpdate extends Command
         }
 
         if ($problems === []) {
+            $updates->appendLog('PATH: '.$this->processEnvironment()['PATH']);
             $updates->appendLog('All prerequisites met.');
 
             return;
@@ -182,9 +183,16 @@ class RunUpdate extends Command
             }
         }
 
+        $path = array_filter([
+            base_path('node_modules/.bin'),
+            (string) getenv('PATH'),
+            '/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin',
+        ]);
+
         return [
             'HOME' => $home,
             'NODE_ENV' => 'development',
+            'PATH' => implode(PATH_SEPARATOR, $path),
             'npm_config_cache' => $home.'/.npm',
             'COMPOSER_HOME' => $home.'/.composer',
         ];
