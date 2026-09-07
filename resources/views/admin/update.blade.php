@@ -63,16 +63,26 @@
                         </button>
                     </form>
 
-                    @if($enabled && $updateAvailable)
+                    @if($enabled)
                         <form action="{{ route('admin.update.run') }}" method="POST"
                               @submit="running = true">
                             @csrf
-                            <button type="submit"
-                                    :disabled="running"
-                                    class="px-4 py-2 bg-purple-600 hover:bg-purple-500 disabled:opacity-50 disabled:cursor-not-allowed rounded-xl text-xs font-bold text-white transition cursor-pointer flex items-center gap-2 shadow-lg shadow-purple-600/20">
-                                <i class="fa-solid fa-cloud-arrow-down text-[11px]"></i>
-                                <span x-text="running ? 'Updating...' : 'Update now'"></span>
-                            </button>
+                            @if($updateAvailable)
+                                <button type="submit"
+                                        :disabled="running"
+                                        class="px-4 py-2 bg-purple-600 hover:bg-purple-500 disabled:opacity-50 disabled:cursor-not-allowed rounded-xl text-xs font-bold text-white transition cursor-pointer flex items-center gap-2 shadow-lg shadow-purple-600/20">
+                                    <i class="fa-solid fa-cloud-arrow-down text-[11px]"></i>
+                                    <span x-text="running ? 'Updating...' : 'Update now'"></span>
+                                </button>
+                            @else
+                                <button type="submit"
+                                        :disabled="running"
+                                        title="Re-run the whole update: dependencies, assets and migrations"
+                                        class="px-4 py-2 bg-[#181621] hover:bg-[#201d2c] border border-purple-500/30 disabled:opacity-50 disabled:cursor-not-allowed rounded-xl text-xs font-semibold text-purple-300 transition cursor-pointer flex items-center gap-2">
+                                    <i class="fa-solid fa-arrows-rotate text-[11px]"></i>
+                                    <span x-text="running ? 'Repairing...' : 'Run update again'"></span>
+                                </button>
+                            @endif
                         </form>
                     @endif
                 </div>

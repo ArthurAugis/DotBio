@@ -117,6 +117,15 @@ class RunUpdate extends Command
             }
         }
 
+        $dirty = Process::path(base_path())
+            ->env($this->processEnvironment())
+            ->run(['git', 'status', '--porcelain', '--untracked-files=no']);
+
+        if ($dirty->successful() && trim($dirty->output()) !== '') {
+            $problems[] = 'The checkout has local modifications: '.trim(str_replace("
+", ', ', $dirty->output()));
+        }
+
         if ($problems === []) {
             $updates->appendLog('PATH: '.$this->processEnvironment()['PATH']);
             $updates->appendLog('All prerequisites met.');

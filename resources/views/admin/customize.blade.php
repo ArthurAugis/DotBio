@@ -76,6 +76,31 @@
             transition: all 0.3s ease;
         }
 
+        .preview-social-item {
+            position: relative;
+            display: inline-flex;
+        }
+        .preview-social-tooltip {
+            position: absolute;
+            bottom: calc(100% + 8px);
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 3px 8px;
+            border-radius: 6px;
+            border-width: 1px;
+            border-style: solid;
+            font-size: 11px;
+            line-height: 1.4;
+            white-space: nowrap;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.18s ease;
+            z-index: 60;
+        }
+        .preview-social-item:hover .preview-social-tooltip {
+            opacity: 1;
+        }
+
         .player-card {
             background: rgba(18, 16, 23, 0.7);
             backdrop-filter: blur(16px);
@@ -343,9 +368,18 @@
                                 <div class="w-full flex items-center justify-center gap-3 flex-wrap pt-1">
                                     <span class="element-badge-label">Social Links</span>
                                     @foreach($profile->links as $link)
-                                        <div class="icon-badge p-1 text-xl flex items-center justify-center transition cursor-pointer"
-                                             :class="'hover-anim-' + ('{{ $link->hover_effect ?? '' }}' ? '{{ $link->hover_effect }}' : (profile.socials_hover_effect || 'none'))">
-                                            <i class="{{ $link->icon_class }}" style="color: {{ $link->color ?: ($profile->icon_color ?? '#ffffff') }};"></i>
+                                        <div class="preview-social-item">
+                                            <div class="icon-badge p-1 text-xl flex items-center justify-center transition cursor-pointer"
+                                                 :class="'hover-anim-' + ('{{ $link->hover_effect ?? '' }}' ? '{{ $link->hover_effect }}' : (profile.socials_hover_effect || 'none'))">
+                                                <i class="{{ $link->icon_class }}" style="color: {{ $link->color ?: ($profile->icon_color ?? '#ffffff') }};"></i>
+                                            </div>
+                                            <span class="preview-social-tooltip"
+                                                  x-show="profile.show_social_tooltips"
+                                                  :style="{
+                                                      background: getTooltipBgRgba(),
+                                                      color: profile.social_tooltip_text_color || '#fafafa',
+                                                      borderColor: profile.social_tooltip_border_color || profile.accent_color || '#8b5cf6'
+                                                  }">{{ $link->title }}</span>
                                         </div>
                                     @endforeach
                                 </div>
@@ -539,6 +573,7 @@
             <input type="hidden" name="show_mute_icon" :value="profile.show_mute_icon ? '1' : ''">
             <input type="hidden" name="show_discord_tag" :value="profile.show_discord_tag ? '1' : ''">
             <input type="hidden" name="show_views_count" :value="profile.show_views_count ? '1' : ''">
+            <input type="hidden" name="show_social_tooltips" :value="profile.show_social_tooltips ? '1' : ''">
 
             <input type="file" id="avatarFileInput" name="avatar_file" @change="submitSaveForm()">
             <input type="file" id="secondaryAvatarFileInput" name="secondary_avatar_file" @change="submitSaveForm()">
@@ -768,6 +803,18 @@
                     let g = parseInt(hex.substring(2, 4), 16) || 16;
                     let b = parseInt(hex.substring(4, 6), 16) || 23;
                     let a = this.profile.card_opacity !== undefined && this.profile.card_opacity !== null ? this.profile.card_opacity : 1;
+                    return `rgba(${r}, ${g}, ${b}, ${a})`;
+                },
+
+                getTooltipBgRgba() {
+                    let hex = (this.profile.social_tooltip_bg_color || '#0a0a0c').replace('#', '');
+                    if (hex.length === 3) {
+                        hex = hex[0]+hex[0] + hex[1]+hex[1] + hex[2]+hex[2];
+                    }
+                    let r = parseInt(hex.substring(0, 2), 16) || 0;
+                    let g = parseInt(hex.substring(2, 4), 16) || 0;
+                    let b = parseInt(hex.substring(4, 6), 16) || 0;
+                    let a = this.profile.social_tooltip_opacity !== undefined && this.profile.social_tooltip_opacity !== null ? this.profile.social_tooltip_opacity : 0.92;
                     return `rgba(${r}, ${g}, ${b}, ${a})`;
                 },
 
