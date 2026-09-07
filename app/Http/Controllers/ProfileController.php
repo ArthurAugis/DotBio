@@ -33,8 +33,10 @@ class ProfileController extends Controller
 
         $this->syncDiscordAvatar($profile);
 
-        $profile->increment('views_count');
-        $this->recordAnalytics($profile->id, 'views');
+        if ($this->shouldCountView($profile)) {
+            $profile->increment('views_count');
+            $this->recordAnalytics($profile->id, 'views');
+        }
 
         return view('profile', [
             'profile' => $profile,
@@ -45,10 +47,32 @@ class ProfileController extends Controller
 
     public function trackClick(Link $link): JsonResponse
     {
+        if (auth()->check()) {
+            return response()->json(['success' => true]);
+        }
+
         $link->increment('clicks_count');
         $this->recordAnalytics($link->profile_id, 'clicks');
 
         return response()->json(['success' => true]);
+    }
+
+    private function shouldCountView(Profile $profile): bool
+    {
+        if (auth()->check()) {
+            return false;
+        }
+
+        $visitor = sha1(implode('|', [
+            request()->ip(),
+            (string) request()->userAgent(),
+        ]));
+
+        return Cache::add(
+            'profile-view:'.$profile->id.':'.$visitor,
+            true,
+            now()->endOfDay(),
+        );
     }
 
     private function syncDiscordAvatar(Profile $profile): void

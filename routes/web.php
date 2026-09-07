@@ -15,7 +15,9 @@ use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [ProfileController::class, 'show'])->name('profile.show');
-Route::post('/links/{link}/click', [ProfileController::class, 'trackClick'])->name('links.click');
+Route::post('/links/{link}/click', [ProfileController::class, 'trackClick'])
+    ->middleware('throttle:20,1')
+    ->name('links.click');
 
 Route::get('/api/discord-status/{discordId}', [DiscordStatusController::class, 'getStatus'])->name('api.discord.status');
 Route::post('/api/discord/update-status', [DiscordStatusController::class, 'updateStatus'])->name('api.discord.update_status');
