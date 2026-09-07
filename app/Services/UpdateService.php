@@ -13,6 +13,8 @@ class UpdateService
 {
     public const STATE_IDLE = 'idle';
 
+    public const STATE_QUEUED = 'queued';
+
     public const STATE_RUNNING = 'running';
 
     public const STATE_DONE = 'done';
@@ -20,6 +22,12 @@ class UpdateService
     public const STATE_FAILED = 'failed';
 
     private const STALE_AFTER_SECONDS = 1800;
+
+    /**
+     * A queued run that never reaches the command means the background process
+     * could not start at all, which is worth surfacing quickly.
+     */
+    private const NEVER_STARTED_AFTER_SECONDS = 120;
 
     public function repository(): string
     {
@@ -158,6 +166,7 @@ class UpdateService
         $default = [
             'state' => self::STATE_IDLE,
             'step' => '',
+            'steps' => [],
             'started_at' => null,
             'finished_at' => null,
             'error' => null,
@@ -178,7 +187,12 @@ class UpdateService
 
         $status = array_merge($default, $decoded);
 
-        if ($status['state'] === self::STATE_RUNNING && $this->hasStalled($status)) {
+        if ($status['state'] === self::STATE_QUEUED && $this->olderThan($status, self::NEVER_STARTED_AFTER_SECONDS)) {
+            $status['state'] = self::STATE_FAILED;
+            $status['error'] = 'The background process never started. Check that PHP can spawn processes and that the web user can run php, git, composer and npm.';
+        }
+
+        if ($status['state'] === self::STATE_RUNNING && $this->olderThan($status, self::STALE_AFTER_SECONDS)) {
             $status['state'] = self::STATE_FAILED;
             $status['error'] = 'The update process stopped responding.';
         }
@@ -187,6 +201,11 @@ class UpdateService
     }
 
     public function isRunning(): bool
+    {
+        return in_array($this->status()['state'], [self::STATE_QUEUED, self::STATE_RUNNING], true);
+    }
+
+    public function isExecuting(): bool
     {
         return $this->status()['state'] === self::STATE_RUNNING;
     }
@@ -210,6 +229,50 @@ class UpdateService
         $status = array_merge($this->status(), $attributes);
 
         file_put_contents($this->statusPath(), json_encode($status, JSON_PRETTY_PRINT), LOCK_EX);
+    }
+
+    /**
+     * Mark the run as started from the web request itself, so the page that
+     * follows the redirect already shows progress instead of racing the
+     * background process for the first status write.
+     */
+    public function markQueued(string $step): void
+    {
+        $this->resetLog();
+        $this->writeStatus([
+            'state' => self::STATE_QUEUED,
+            'step' => $step,
+            'steps' => [],
+            'started_at' => now()->toIso8601String(),
+            'finished_at' => null,
+            'error' => null,
+        ]);
+    }
+
+    /**
+     * @param  array<int, string>  $labels
+     */
+    public function initialiseSteps(array $labels): void
+    {
+        $this->writeStatus([
+            'steps' => array_map(fn (string $label): array => [
+                'label' => $label,
+                'state' => 'pending',
+            ], $labels),
+        ]);
+    }
+
+    public function markStep(string $label, string $state): void
+    {
+        $steps = $this->status()['steps'];
+
+        foreach ($steps as $index => $step) {
+            if ($step['label'] === $label) {
+                $steps[$index]['state'] = $state;
+            }
+        }
+
+        $this->writeStatus(['steps' => $steps, 'step' => $label]);
     }
 
     public function appendLog(string $line): void
@@ -258,12 +321,12 @@ class UpdateService
     /**
      * @param  array{started_at: ?string}  $status
      */
-    private function hasStalled(array $status): bool
+    private function olderThan(array $status, int $seconds): bool
     {
         if (! $status['started_at']) {
             return true;
         }
 
-        return strtotime($status['started_at']) < time() - self::STALE_AFTER_SECONDS;
+        return strtotime($status['started_at']) < time() - $seconds;
     }
 }

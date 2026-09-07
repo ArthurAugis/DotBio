@@ -26,7 +26,7 @@ class RunUpdate extends Command
             return self::FAILURE;
         }
 
-        if ($updates->isRunning() && ! $this->option('force')) {
+        if ($updates->isExecuting() && ! $this->option('force')) {
             $this->error('An update is already running.');
 
             return self::FAILURE;
@@ -46,17 +46,35 @@ class RunUpdate extends Command
             'backup' => null,
         ]);
 
-        try {
-            $backup = $this->backupDatabase($updates);
-            $updates->writeStatus(['backup' => $backup]);
+        $artisan = base_path('artisan');
 
-            $this->runStep($updates, 'Enabling maintenance mode', [PHP_BINARY, base_path('artisan'), 'down']);
-            $this->runStep($updates, 'Pulling latest code', ['git', 'pull', '--ff-only', (string) config('dotbio.remote'), (string) config('dotbio.branch')]);
-            $this->runStep($updates, 'Installing PHP dependencies', ['composer', 'install', '--no-dev', '--optimize-autoloader', '--no-interaction', '--no-progress']);
-            $this->runStep($updates, 'Installing front-end dependencies', ['npm', 'ci', '--no-audit', '--no-fund']);
-            $this->runStep($updates, 'Building assets', ['npm', 'run', 'build']);
-            $this->runStep($updates, 'Running migrations', [PHP_BINARY, base_path('artisan'), 'migrate', '--force']);
-            $this->runStep($updates, 'Clearing caches', [PHP_BINARY, base_path('artisan'), 'optimize:clear']);
+        $steps = [
+            'Backing up the database' => function () use ($updates): void {
+                $updates->writeStatus(['backup' => $this->backupDatabase($updates)]);
+            },
+            'Enabling maintenance mode' => fn () => $this->runProcess($updates, [PHP_BINARY, $artisan, 'down']),
+            'Pulling latest code' => fn () => $this->runProcess($updates, ['git', 'pull', '--ff-only', (string) config('dotbio.remote'), (string) config('dotbio.branch')]),
+            'Installing PHP dependencies' => fn () => $this->runProcess($updates, ['composer', 'install', '--no-dev', '--optimize-autoloader', '--no-interaction', '--no-progress']),
+            'Installing front-end dependencies' => fn () => $this->runProcess($updates, ['npm', 'ci', '--no-audit', '--no-fund']),
+            'Building assets' => fn () => $this->runProcess($updates, ['npm', 'run', 'build']),
+            'Running migrations' => fn () => $this->runProcess($updates, [PHP_BINARY, $artisan, 'migrate', '--force']),
+            'Clearing caches' => fn () => $this->runProcess($updates, [PHP_BINARY, $artisan, 'optimize:clear']),
+        ];
+
+        $updates->initialiseSteps(array_keys($steps));
+        $currentStep = '';
+
+        try {
+            foreach ($steps as $label => $action) {
+                $currentStep = $label;
+                $updates->markStep($label, 'running');
+                $updates->appendLog('');
+                $updates->appendLog('=== '.$label.' ===');
+
+                $action();
+
+                $updates->markStep($label, 'done');
+            }
 
             $updates->writeStatus([
                 'state' => UpdateService::STATE_DONE,
@@ -67,6 +85,10 @@ class RunUpdate extends Command
 
             $updates->appendLog('Update complete.');
         } catch (Throwable $exception) {
+            if ($currentStep !== '') {
+                $updates->markStep($currentStep, 'failed');
+            }
+
             $updates->writeStatus([
                 'state' => UpdateService::STATE_FAILED,
                 'finished_at' => now()->toIso8601String(),
@@ -84,10 +106,8 @@ class RunUpdate extends Command
     /**
      * @param  array<int, string>  $command
      */
-    private function runStep(UpdateService $updates, string $label, array $command): void
+    private function runProcess(UpdateService $updates, array $command): void
     {
-        $updates->writeStatus(['step' => $label]);
-        $updates->appendLog('');
         $updates->appendLog('$ '.implode(' ', $command));
 
         $result = Process::path(base_path())
@@ -97,14 +117,26 @@ class RunUpdate extends Command
             });
 
         if ($result->failed()) {
-            throw new RuntimeException($label.' failed (exit code '.$result->exitCode().').');
+            $reason = trim($result->errorOutput()) ?: trim($result->output());
+
+            throw new RuntimeException(sprintf(
+                '%s exited with code %d. %s',
+                basename($command[0]),
+                $result->exitCode(),
+                $this->lastMeaningfulLine($reason),
+            ));
         }
+    }
+
+    private function lastMeaningfulLine(string $output): string
+    {
+        $lines = array_values(array_filter(array_map('trim', explode("\n", $output))));
+
+        return $lines === [] ? 'No output was captured.' : (string) end($lines);
     }
 
     private function backupDatabase(UpdateService $updates): ?string
     {
-        $updates->writeStatus(['step' => 'Backing up the database']);
-
         if (config('database.default') !== 'sqlite') {
             $updates->appendLog('Database is not SQLite, skipping the automatic backup.');
 

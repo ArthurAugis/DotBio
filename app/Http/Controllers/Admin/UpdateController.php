@@ -49,9 +49,10 @@ class UpdateController extends Controller
             return redirect()->route('admin.update')->with('error', 'An update is already running.');
         }
 
+        $updates->markQueued('Starting the update');
         $updates->dispatchUpdate('dotbio:update');
 
-        return redirect()->route('admin.update')->with('status', 'The update has started.');
+        return redirect()->route('admin.update');
     }
 
     public function rollback(UpdateService $updates): RedirectResponse
@@ -64,9 +65,10 @@ class UpdateController extends Controller
             return redirect()->route('admin.update')->with('error', 'An update is already running.');
         }
 
+        $updates->markQueued('Starting the rollback');
         $updates->dispatchUpdate('dotbio:rollback');
 
-        return redirect()->route('admin.update')->with('status', 'The rollback has started.');
+        return redirect()->route('admin.update');
     }
 
     public function status(UpdateService $updates): JsonResponse

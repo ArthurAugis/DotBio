@@ -110,10 +110,17 @@
             </x-admin.card>
         @endif
 
-        <x-admin.card class="p-6 space-y-4" x-show="hasActivity" x-cloak>
-            <div class="flex items-center justify-between">
-                <h2 class="text-sm font-semibold text-zinc-200 flex items-center gap-2">
+        <x-admin.card class="p-6 space-y-5" x-show="hasActivity" x-cloak>
+            <div class="flex items-center justify-between gap-4">
+                <h2 class="text-sm font-semibold flex items-center gap-2"
+                    :class="{
+                        'text-purple-300': running,
+                        'text-emerald-400': status.state === 'done',
+                        'text-red-300': status.state === 'failed'
+                    }">
                     <span x-show="running" class="w-2 h-2 rounded-full bg-purple-400 animate-pulse"></span>
+                    <i x-show="status.state === 'done'" class="fa-solid fa-circle-check"></i>
+                    <i x-show="status.state === 'failed'" class="fa-solid fa-circle-exclamation"></i>
                     <span x-text="headline"></span>
                 </h2>
 
@@ -122,7 +129,7 @@
                           onsubmit="return confirm('Restore the code and database from before the update?')">
                         @csrf
                         <button type="submit"
-                                class="px-3 py-1.5 bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 rounded-lg text-[11px] font-semibold text-red-300 transition cursor-pointer">
+                                class="px-3 py-1.5 bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 rounded-lg text-[11px] font-semibold text-red-300 transition cursor-pointer shrink-0">
                             Roll back
                         </button>
                     </form>
@@ -130,10 +137,43 @@
             </div>
 
             <template x-if="status.error">
-                <p class="text-xs text-red-300" x-text="status.error"></p>
+                <div class="p-3 rounded-xl bg-red-500/10 border border-red-500/30 space-y-1">
+                    <p class="text-[11px] font-semibold text-red-300">Failed during: <span x-text="status.step"></span></p>
+                    <p class="text-xs text-red-200 font-mono break-words" x-text="status.error"></p>
+                </div>
             </template>
 
-            <pre class="p-4 bg-[#09080d] border border-white/5 rounded-xl text-[11px] font-mono text-zinc-400 overflow-x-auto max-h-[320px] overflow-y-auto whitespace-pre-wrap" x-text="log"></pre>
+            <div class="space-y-1.5" x-show="status.steps.length > 0">
+                <template x-for="step in status.steps" :key="step.label">
+                    <div class="flex items-center gap-3 text-xs">
+                        <span class="w-4 shrink-0 flex items-center justify-center">
+                            <i x-show="step.state === 'pending'" class="fa-regular fa-circle text-zinc-600 text-[11px]"></i>
+                            <i x-show="step.state === 'running'" class="fa-solid fa-spinner fa-spin text-purple-400 text-[11px]"></i>
+                            <i x-show="step.state === 'done'" class="fa-solid fa-check text-emerald-400 text-[11px]"></i>
+                            <i x-show="step.state === 'failed'" class="fa-solid fa-xmark text-red-400 text-[11px]"></i>
+                        </span>
+                        <span x-text="step.label"
+                              :class="{
+                                  'text-zinc-500': step.state === 'pending',
+                                  'text-purple-300 font-semibold': step.state === 'running',
+                                  'text-zinc-300': step.state === 'done',
+                                  'text-red-300 font-semibold': step.state === 'failed'
+                              }"></span>
+                    </div>
+                </template>
+            </div>
+
+            <div x-data="{ showLog: false }" class="space-y-2">
+                <button @click="showLog = !showLog"
+                        class="text-[11px] text-zinc-400 hover:text-zinc-200 transition cursor-pointer flex items-center gap-2">
+                    <i class="fa-solid fa-terminal text-[10px]"></i>
+                    <span x-text="showLog ? 'Hide output' : 'Show output'"></span>
+                </button>
+
+                <pre x-show="showLog" x-cloak
+                     class="p-4 bg-[#09080d] border border-white/5 rounded-xl text-[11px] font-mono text-zinc-400 overflow-x-auto max-h-[320px] overflow-y-auto whitespace-pre-wrap"
+                     x-text="log || 'Waiting for output...'"></pre>
+            </div>
         </x-admin.card>
     </div>
 
@@ -143,7 +183,7 @@
             Alpine.data('updatePanel', (initialStatus, statusUrl) => ({
                 status: initialStatus,
                 log: '',
-                running: initialStatus.state === 'running',
+                running: ['queued', 'running'].includes(initialStatus.state),
                 timer: null,
 
                 get hasActivity() {
@@ -151,6 +191,7 @@
                 },
 
                 get headline() {
+                    if (this.status.state === 'queued') return this.status.step || 'Starting...';
                     if (this.status.state === 'running') return this.status.step || 'Working...';
                     if (this.status.state === 'done') return this.status.step || 'Done';
                     if (this.status.state === 'failed') return 'Update failed';
@@ -163,30 +204,36 @@
                     }
 
                     if (this.running) {
-                        this.timer = setInterval(() => this.poll(), 2000);
+                        this.timer = setInterval(() => this.poll(), 1500);
                     }
                 },
 
                 async poll() {
+                    let payload;
+
                     try {
                         const response = await fetch(statusUrl, { headers: { 'Accept': 'application/json' } });
-                        const payload = await response.json();
-                        const wasRunning = this.running;
-
-                        this.status = payload.status;
-                        this.log = payload.log;
-                        this.running = payload.status.state === 'running';
-
-                        if (wasRunning && !this.running) {
-                            clearInterval(this.timer);
-                            this.timer = null;
-
-                            if (payload.status.state === 'done') {
-                                window.location.reload();
-                            }
-                        }
+                        payload = await response.json();
                     } catch (error) {
-                        // The app restarts during an update, so a failed poll is expected.
+                        // PHP restarts mid-update, so an occasional failed poll is expected.
+                        return;
+                    }
+
+                    const wasRunning = this.running;
+
+                    this.status = payload.status;
+                    this.log = payload.log;
+                    this.running = ['queued', 'running'].includes(payload.status.state);
+
+                    if (!wasRunning || this.running) {
+                        return;
+                    }
+
+                    clearInterval(this.timer);
+                    this.timer = null;
+
+                    if (payload.status.state === 'done') {
+                        setTimeout(() => window.location.reload(), 1500);
                     }
                 }
             }));

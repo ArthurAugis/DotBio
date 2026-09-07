@@ -29,7 +29,6 @@ class RollbackUpdate extends Command
             return self::FAILURE;
         }
 
-        $updates->resetLog();
         $updates->writeStatus([
             'state' => UpdateService::STATE_RUNNING,
             'step' => 'Rolling back',
@@ -38,13 +37,31 @@ class RollbackUpdate extends Command
             'error' => null,
         ]);
 
+        $artisan = base_path('artisan');
+
+        $steps = [
+            'Enabling maintenance mode' => fn () => $this->runProcess($updates, [PHP_BINARY, $artisan, 'down']),
+            'Restoring code' => fn () => $this->runProcess($updates, ['git', 'reset', '--hard', $commit]),
+            'Restoring the database' => fn () => $this->restoreDatabase($updates, (string) ($status['backup'] ?? '')),
+            'Installing PHP dependencies' => fn () => $this->runProcess($updates, ['composer', 'install', '--no-dev', '--optimize-autoloader', '--no-interaction', '--no-progress']),
+            'Building assets' => fn () => $this->runProcess($updates, ['npm', 'run', 'build']),
+            'Clearing caches' => fn () => $this->runProcess($updates, [PHP_BINARY, $artisan, 'optimize:clear']),
+        ];
+
+        $updates->initialiseSteps(array_keys($steps));
+        $currentStep = '';
+
         try {
-            $this->runStep($updates, 'Enabling maintenance mode', [PHP_BINARY, base_path('artisan'), 'down']);
-            $this->runStep($updates, 'Restoring code', ['git', 'reset', '--hard', $commit]);
-            $this->restoreDatabase($updates, (string) ($status['backup'] ?? ''));
-            $this->runStep($updates, 'Installing PHP dependencies', ['composer', 'install', '--no-dev', '--optimize-autoloader', '--no-interaction', '--no-progress']);
-            $this->runStep($updates, 'Building assets', ['npm', 'run', 'build']);
-            $this->runStep($updates, 'Clearing caches', [PHP_BINARY, base_path('artisan'), 'optimize:clear']);
+            foreach ($steps as $label => $action) {
+                $currentStep = $label;
+                $updates->markStep($label, 'running');
+                $updates->appendLog('');
+                $updates->appendLog('=== '.$label.' ===');
+
+                $action();
+
+                $updates->markStep($label, 'done');
+            }
 
             $updates->writeStatus([
                 'state' => UpdateService::STATE_DONE,
@@ -55,6 +72,10 @@ class RollbackUpdate extends Command
 
             $updates->appendLog('Rollback complete.');
         } catch (Throwable $exception) {
+            if ($currentStep !== '') {
+                $updates->markStep($currentStep, 'failed');
+            }
+
             $updates->writeStatus([
                 'state' => UpdateService::STATE_FAILED,
                 'finished_at' => now()->toIso8601String(),
@@ -72,10 +93,8 @@ class RollbackUpdate extends Command
     /**
      * @param  array<int, string>  $command
      */
-    private function runStep(UpdateService $updates, string $label, array $command): void
+    private function runProcess(UpdateService $updates, array $command): void
     {
-        $updates->writeStatus(['step' => $label]);
-        $updates->appendLog('');
         $updates->appendLog('$ '.implode(' ', $command));
 
         $result = Process::path(base_path())
@@ -85,14 +104,20 @@ class RollbackUpdate extends Command
             });
 
         if ($result->failed()) {
-            throw new RuntimeException($label.' failed (exit code '.$result->exitCode().').');
+            $reason = trim($result->errorOutput()) ?: trim($result->output());
+            $lines = array_values(array_filter(array_map('trim', explode("\n", $reason))));
+
+            throw new RuntimeException(sprintf(
+                '%s exited with code %d. %s',
+                basename($command[0]),
+                $result->exitCode(),
+                $lines === [] ? 'No output was captured.' : (string) end($lines),
+            ));
         }
     }
 
     private function restoreDatabase(UpdateService $updates, string $backup): void
     {
-        $updates->writeStatus(['step' => 'Restoring the database']);
-
         if ($backup === '' || ! is_file($backup)) {
             $updates->appendLog('No database backup recorded, leaving the current database untouched.');
 
