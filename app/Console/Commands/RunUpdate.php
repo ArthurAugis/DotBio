@@ -53,7 +53,7 @@ class RunUpdate extends Command
             'Enabling maintenance mode' => fn () => $this->runProcess($updates, [$php, $artisan, 'down']),
             'Pulling latest code' => fn () => $this->runProcess($updates, ['git', 'pull', '--ff-only', (string) config('dotbio.remote'), (string) config('dotbio.branch')]),
             'Installing PHP dependencies' => fn () => $this->runProcess($updates, ['composer', 'install', '--no-dev', '--optimize-autoloader', '--no-interaction', '--no-progress']),
-            'Installing front-end dependencies' => fn () => $this->runProcess($updates, ['npm', 'ci', '--no-audit', '--no-fund']),
+            'Installing front-end dependencies' => fn () => $this->runProcess($updates, ['npm', 'ci', '--include=dev', '--no-audit', '--no-fund']),
             'Building assets' => fn () => $this->runProcess($updates, ['npm', 'run', 'build']),
             'Running migrations' => fn () => $this->runProcess($updates, [$php, $artisan, 'migrate', '--force']),
             'Clearing caches' => fn () => $this->runProcess($updates, [$php, $artisan, 'optimize:clear']),
@@ -111,8 +111,8 @@ class RunUpdate extends Command
             }
         }
 
-        foreach (['.git', 'storage', 'bootstrap/cache'] as $path) {
-            if (! is_writable(base_path($path))) {
+        foreach (['.git', 'storage', 'bootstrap/cache', 'node_modules'] as $path) {
+            if (file_exists(base_path($path)) && ! is_writable(base_path($path))) {
                 $problems[] = sprintf('%s is not writable by the %s user.', $path, get_current_user());
             }
         }
@@ -151,6 +151,7 @@ class RunUpdate extends Command
         $updates->appendLog('$ '.implode(' ', $command));
 
         $result = Process::path(base_path())
+            ->env($this->processEnvironment())
             ->timeout(self::STEP_TIMEOUT)
             ->run($command, function (string $type, string $output) use ($updates): void {
                 $updates->appendLog($output);
@@ -166,6 +167,27 @@ class RunUpdate extends Command
                 $this->lastMeaningfulLine($reason),
             ));
         }
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    private function processEnvironment(): array
+    {
+        $home = storage_path('app/update-home');
+
+        foreach ([$home, $home.'/.npm', $home.'/.composer'] as $directory) {
+            if (! is_dir($directory)) {
+                mkdir($directory, 0775, true);
+            }
+        }
+
+        return [
+            'HOME' => $home,
+            'NODE_ENV' => 'development',
+            'npm_config_cache' => $home.'/.npm',
+            'COMPOSER_HOME' => $home.'/.composer',
+        ];
     }
 
     private function lastMeaningfulLine(string $output): string
