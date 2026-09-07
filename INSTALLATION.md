@@ -344,3 +344,4 @@ detects this and tells you to update manually.
 | Update fails on "Pulling latest code" | The checkout has local modifications, or the web user cannot write to it. Run `git status` as that user and see section 5.7. |
 | Update fails on composer or npm | Those binaries are not in the web user's `PATH`. Run the step manually over SSH, or set `DOTBIO_SELF_UPDATE_ENABLED=false`. |
 | Update button never appears | The install is not a git checkout, self-update is disabled, or the scheduler is not running the hourly version check. |
+| Update stays stuck on "Starting the update" | The background process could not start. Check `storage/logs/dotbio-update.log`, and set `DOTBIO_PHP_BINARY=/usr/bin/php` if PHP is not installed in the standard location. |

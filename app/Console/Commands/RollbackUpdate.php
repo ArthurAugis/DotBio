@@ -24,7 +24,14 @@ class RollbackUpdate extends Command
         $commit = (string) ($status['from'] ?? '');
 
         if (! preg_match('/^[0-9a-f]{40}$/', $commit)) {
-            $this->error('No recorded commit to roll back to.');
+            $reason = 'No recorded commit to roll back to.';
+            $this->error($reason);
+
+            $updates->writeStatus([
+                'state' => UpdateService::STATE_FAILED,
+                'finished_at' => now()->toIso8601String(),
+                'error' => $reason,
+            ]);
 
             return self::FAILURE;
         }
@@ -38,14 +45,15 @@ class RollbackUpdate extends Command
         ]);
 
         $artisan = base_path('artisan');
+        $php = $updates->phpBinary();
 
         $steps = [
-            'Enabling maintenance mode' => fn () => $this->runProcess($updates, [PHP_BINARY, $artisan, 'down']),
+            'Enabling maintenance mode' => fn () => $this->runProcess($updates, [$php, $artisan, 'down']),
             'Restoring code' => fn () => $this->runProcess($updates, ['git', 'reset', '--hard', $commit]),
             'Restoring the database' => fn () => $this->restoreDatabase($updates, (string) ($status['backup'] ?? '')),
             'Installing PHP dependencies' => fn () => $this->runProcess($updates, ['composer', 'install', '--no-dev', '--optimize-autoloader', '--no-interaction', '--no-progress']),
             'Building assets' => fn () => $this->runProcess($updates, ['npm', 'run', 'build']),
-            'Clearing caches' => fn () => $this->runProcess($updates, [PHP_BINARY, $artisan, 'optimize:clear']),
+            'Clearing caches' => fn () => $this->runProcess($updates, [$php, $artisan, 'optimize:clear']),
         ];
 
         $updates->initialiseSteps(array_keys($steps));
@@ -84,7 +92,7 @@ class RollbackUpdate extends Command
 
             $updates->appendLog('FAILED: '.$exception->getMessage());
         } finally {
-            Process::path(base_path())->timeout(60)->run([PHP_BINARY, base_path('artisan'), 'up']);
+            Process::path(base_path())->timeout(60)->run([$updates->phpBinary(), base_path('artisan'), 'up']);
         }
 
         return $updates->status()['state'] === UpdateService::STATE_DONE ? self::SUCCESS : self::FAILURE;

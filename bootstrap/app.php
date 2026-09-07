@@ -18,8 +18,6 @@ return Application::configure(basePath: dirname(__DIR__))
             'api/discord/update-status',
         ]);
 
-        // The updater puts the app in maintenance mode while it runs, so the
-        // admin can still watch its progress and roll back a failed update.
         $middleware->preventRequestsDuringMaintenance(except: [
             'admin/update',
             'admin/update/*',

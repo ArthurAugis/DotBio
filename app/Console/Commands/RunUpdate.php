@@ -21,15 +21,11 @@ class RunUpdate extends Command
     public function handle(UpdateService $updates): int
     {
         if (! $updates->isEnabled()) {
-            $this->error('Self-update is disabled or this install is not a git checkout.');
-
-            return self::FAILURE;
+            return $this->abort($updates, 'Self-update is disabled or this install is not a git checkout.');
         }
 
         if ($updates->isExecuting() && ! $this->option('force')) {
-            $this->error('An update is already running.');
-
-            return self::FAILURE;
+            return $this->abort($updates, 'An update is already running.');
         }
 
         $fromCommit = $updates->currentCommit();
@@ -47,18 +43,20 @@ class RunUpdate extends Command
         ]);
 
         $artisan = base_path('artisan');
+        $php = $updates->phpBinary();
 
         $steps = [
+            'Checking prerequisites' => fn () => $this->checkPrerequisites($updates),
             'Backing up the database' => function () use ($updates): void {
                 $updates->writeStatus(['backup' => $this->backupDatabase($updates)]);
             },
-            'Enabling maintenance mode' => fn () => $this->runProcess($updates, [PHP_BINARY, $artisan, 'down']),
+            'Enabling maintenance mode' => fn () => $this->runProcess($updates, [$php, $artisan, 'down']),
             'Pulling latest code' => fn () => $this->runProcess($updates, ['git', 'pull', '--ff-only', (string) config('dotbio.remote'), (string) config('dotbio.branch')]),
             'Installing PHP dependencies' => fn () => $this->runProcess($updates, ['composer', 'install', '--no-dev', '--optimize-autoloader', '--no-interaction', '--no-progress']),
             'Installing front-end dependencies' => fn () => $this->runProcess($updates, ['npm', 'ci', '--no-audit', '--no-fund']),
             'Building assets' => fn () => $this->runProcess($updates, ['npm', 'run', 'build']),
-            'Running migrations' => fn () => $this->runProcess($updates, [PHP_BINARY, $artisan, 'migrate', '--force']),
-            'Clearing caches' => fn () => $this->runProcess($updates, [PHP_BINARY, $artisan, 'optimize:clear']),
+            'Running migrations' => fn () => $this->runProcess($updates, [$php, $artisan, 'migrate', '--force']),
+            'Clearing caches' => fn () => $this->runProcess($updates, [$php, $artisan, 'optimize:clear']),
         ];
 
         $updates->initialiseSteps(array_keys($steps));
@@ -97,10 +95,52 @@ class RunUpdate extends Command
 
             $updates->appendLog('FAILED: '.$exception->getMessage());
         } finally {
-            Process::path(base_path())->timeout(60)->run([PHP_BINARY, base_path('artisan'), 'up']);
+            Process::path(base_path())->timeout(60)->run([$updates->phpBinary(), base_path('artisan'), 'up']);
         }
 
         return $updates->status()['state'] === UpdateService::STATE_DONE ? self::SUCCESS : self::FAILURE;
+    }
+
+    private function checkPrerequisites(UpdateService $updates): void
+    {
+        $problems = [];
+
+        foreach (['git', 'composer', 'npm'] as $binary) {
+            if (Process::path(base_path())->run(['sh', '-c', 'command -v '.$binary])->failed()) {
+                $problems[] = sprintf('%s is not in the PATH of the %s user.', $binary, get_current_user());
+            }
+        }
+
+        foreach (['.git', 'storage', 'bootstrap/cache'] as $path) {
+            if (! is_writable(base_path($path))) {
+                $problems[] = sprintf('%s is not writable by the %s user.', $path, get_current_user());
+            }
+        }
+
+        if ($problems === []) {
+            $updates->appendLog('All prerequisites met.');
+
+            return;
+        }
+
+        foreach ($problems as $problem) {
+            $updates->appendLog('- '.$problem);
+        }
+
+        throw new RuntimeException(implode(' ', $problems));
+    }
+
+    private function abort(UpdateService $updates, string $reason): int
+    {
+        $this->error($reason);
+
+        $updates->writeStatus([
+            'state' => UpdateService::STATE_FAILED,
+            'finished_at' => now()->toIso8601String(),
+            'error' => $reason,
+        ]);
+
+        return self::FAILURE;
     }
 
     /**

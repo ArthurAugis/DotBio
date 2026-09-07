@@ -23,10 +23,6 @@ class UpdateService
 
     private const STALE_AFTER_SECONDS = 1800;
 
-    /**
-     * A queued run that never reaches the command means the background process
-     * could not start at all, which is worth surfacing quickly.
-     */
     private const NEVER_STARTED_AFTER_SECONDS = 120;
 
     public function repository(): string
@@ -57,8 +53,6 @@ class UpdateService
     }
 
     /**
-     * Latest commit on the configured branch, or null when GitHub is unreachable.
-     *
      * @return array{sha: string, message: string, author: string, date: string}|null
      */
     public function latestCommit(): ?array
@@ -90,8 +84,6 @@ class UpdateService
     }
 
     /**
-     * Commits present on the remote branch but missing locally, newest first.
-     *
      * @return array<int, array{sha: string, message: string, author: string, date: string}>
      */
     public function pendingCommits(): array
@@ -144,9 +136,6 @@ class UpdateService
         return $current !== null && $latest !== null && $current !== $latest['sha'];
     }
 
-    /**
-     * Cache-only variant for the admin chrome, so rendering a page never waits on GitHub.
-     */
     public function updateAvailableFromCache(): bool
     {
         $latest = Cache::get('dotbio-latest-commit');
@@ -231,11 +220,6 @@ class UpdateService
         file_put_contents($this->statusPath(), json_encode($status, JSON_PRETTY_PRINT), LOCK_EX);
     }
 
-    /**
-     * Mark the run as started from the web request itself, so the page that
-     * follows the redirect already shows progress instead of racing the
-     * background process for the first status write.
-     */
     public function markQueued(string $step): void
     {
         $this->resetLog();
@@ -285,13 +269,28 @@ class UpdateService
         file_put_contents($this->logPath(), '', LOCK_EX);
     }
 
-    /**
-     * Launch the update command detached so it survives the current request.
-     */
+    // PHP_BINARY is the FPM binary under php-fpm and cannot run artisan.
+    public function phpBinary(): string
+    {
+        $configured = config('dotbio.php_binary');
+
+        if (is_string($configured) && $configured !== '') {
+            return $configured;
+        }
+
+        if (PHP_SAPI === 'cli') {
+            return PHP_BINARY;
+        }
+
+        $candidate = PHP_BINDIR.DIRECTORY_SEPARATOR.'php';
+
+        return is_executable($candidate) ? $candidate : 'php';
+    }
+
     public function dispatchUpdate(string $command): void
     {
         $artisan = escapeshellarg(base_path('artisan'));
-        $php = escapeshellarg(PHP_BINARY);
+        $php = escapeshellarg($this->phpBinary());
 
         if (PHP_OS_FAMILY === 'Windows') {
             Process::path(base_path())->run(sprintf('start /B %s %s %s', $php, $artisan, $command));
@@ -299,8 +298,13 @@ class UpdateService
             return;
         }
 
-        // nohup keeps the update alive once PHP-FPM tears down the request that started it.
-        Process::path(base_path())->run(['sh', '-c', sprintf('nohup %s %s %s > /dev/null 2>&1 &', $php, $artisan, $command)]);
+        Process::path(base_path())->run(['sh', '-c', sprintf(
+            'nohup %s %s %s >> %s 2>&1 &',
+            $php,
+            $artisan,
+            $command,
+            escapeshellarg($this->logPath()),
+        )]);
     }
 
     public function statusPath(): string
