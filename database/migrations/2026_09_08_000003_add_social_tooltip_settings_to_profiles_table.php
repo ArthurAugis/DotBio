@@ -13,7 +13,7 @@ return new class extends Migration
         Schema::table('profiles', function (Blueprint $table): void {
             $table->boolean('show_social_tooltips')->default(true);
             $table->string('social_tooltip_bg_color')->nullable();
-            $table->float('social_tooltip_opacity')->default(0.92);
+            $table->float('social_tooltip_opacity')->default(1);
             $table->string('social_tooltip_text_color')->nullable();
             $table->string('social_tooltip_border_color')->nullable();
         });

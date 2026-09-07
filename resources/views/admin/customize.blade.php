@@ -574,6 +574,10 @@
             <input type="hidden" name="show_discord_tag" :value="profile.show_discord_tag ? '1' : ''">
             <input type="hidden" name="show_views_count" :value="profile.show_views_count ? '1' : ''">
             <input type="hidden" name="show_social_tooltips" :value="profile.show_social_tooltips ? '1' : ''">
+            <input type="hidden" name="social_tooltip_bg_color" :value="profile.social_tooltip_bg_color">
+            <input type="hidden" name="social_tooltip_opacity" :value="profile.social_tooltip_opacity">
+            <input type="hidden" name="social_tooltip_text_color" :value="profile.social_tooltip_text_color">
+            <input type="hidden" name="social_tooltip_border_color" :value="profile.social_tooltip_border_color">
 
             <input type="file" id="avatarFileInput" name="avatar_file" @change="submitSaveForm()">
             <input type="file" id="secondaryAvatarFileInput" name="secondary_avatar_file" @change="submitSaveForm()">
@@ -814,7 +818,7 @@
                     let r = parseInt(hex.substring(0, 2), 16) || 0;
                     let g = parseInt(hex.substring(2, 4), 16) || 0;
                     let b = parseInt(hex.substring(4, 6), 16) || 0;
-                    let a = this.profile.social_tooltip_opacity !== undefined && this.profile.social_tooltip_opacity !== null ? this.profile.social_tooltip_opacity : 0.92;
+                    let a = this.profile.social_tooltip_opacity !== undefined && this.profile.social_tooltip_opacity !== null ? this.profile.social_tooltip_opacity : 1;
                     return `rgba(${r}, ${g}, ${b}, ${a})`;
                 },
 

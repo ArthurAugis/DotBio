@@ -71,7 +71,7 @@
             <div class="space-y-1">
                 <label class="text-zinc-400 font-semibold text-xs">Tooltip Background Opacity</label>
                 <input type="range" min="0" max="1" step="0.01" x-model="profile.social_tooltip_opacity" class="w-full accent-purple-500 cursor-pointer">
-                <span class="text-purple-400 font-mono text-xs" x-text="Math.round((profile.social_tooltip_opacity ?? 0.92) * 100) + '%'"></span>
+                <span class="text-purple-400 font-mono text-xs" x-text="Math.round((profile.social_tooltip_opacity ?? 1) * 100) + '%'"></span>
             </div>
 
             <x-admin.color-picker model="profile.social_tooltip_text_color" label="Tooltip Text Color" />

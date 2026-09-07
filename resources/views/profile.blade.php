@@ -144,7 +144,7 @@
             $tooltipR = hexdec(substr($tooltipHex, 0, 2));
             $tooltipG = hexdec(substr($tooltipHex, 2, 2));
             $tooltipB = hexdec(substr($tooltipHex, 4, 2));
-            $tooltipA = $profile->social_tooltip_opacity ?? 0.92;
+            $tooltipA = $profile->social_tooltip_opacity ?? 1;
             $tooltipBg = "rgba({$tooltipR},{$tooltipG},{$tooltipB},{$tooltipA})";
             $tooltipBorder = $profile->social_tooltip_border_color ?: ($profile->accent_color ?? '#8b5cf6');
         @endphp
