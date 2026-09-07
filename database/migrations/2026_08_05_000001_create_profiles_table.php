@@ -27,7 +27,6 @@ return new class extends Migration
             $table->string('background_type')->nullable();
             $table->string('background_url')->nullable();
             $table->string('background_color')->nullable();
-            $table->string('background_effect')->nullable();
             $table->integer('background_blur')->nullable();
 
             $table->string('card_bg_color')->nullable();

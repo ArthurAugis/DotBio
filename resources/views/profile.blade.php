@@ -234,10 +234,6 @@
 <body class="h-full min-h-screen relative flex flex-col items-center justify-center p-4 overflow-x-hidden select-none"
       x-data="dotBioProfile({{ json_encode($profile) }})">
 
-    @if(($profile->background_effect ?? 'none') !== 'none')
-        <canvas id="bgCanvas" class="fixed inset-0 pointer-events-none z-0"></canvas>
-    @endif
-
     @if($profile->audio_enabled && $profile->audio_url && ($profile->show_mute_icon ?? true))
     <div x-cloak x-show="profile.show_audio_player" class="fixed top-6 left-6 z-40" x-data="{ hovered: false }">
         <button @click="toggleMute()" 

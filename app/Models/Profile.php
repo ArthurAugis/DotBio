@@ -40,7 +40,6 @@ class Profile extends Model
         'background_type',
         'background_url',
         'background_color',
-        'background_effect',
         'background_blur',
 
         'card_bg_color',

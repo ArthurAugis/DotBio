@@ -28,7 +28,6 @@ class UpdateCustomizationRequest extends FormRequest
             'background_type' => ['nullable', 'string', 'in:color,image,video'],
             'background_color' => ['nullable', 'string', 'max:20'],
             'background_blur' => ['nullable', 'integer', 'min:0', 'max:50'],
-            'background_effect' => ['nullable', 'string', 'max:50'],
 
             'font_family' => ['nullable', 'string', 'max:50'],
             'text_color' => ['nullable', 'string', 'max:20'],
