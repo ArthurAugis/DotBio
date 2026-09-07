@@ -15,6 +15,8 @@ class Analytic extends Model
         'views',
         'clicks',
         'countries',
+        'referrers',
+        'devices',
     ];
 
     protected function casts(): array
@@ -24,6 +26,8 @@ class Analytic extends Model
             'views' => 'integer',
             'clicks' => 'integer',
             'countries' => 'array',
+            'referrers' => 'array',
+            'devices' => 'array',
         ];
     }
 

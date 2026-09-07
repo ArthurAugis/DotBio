@@ -27,8 +27,8 @@
                     <span>Profile Views</span>
                     <i class="fa-solid fa-eye text-zinc-500"></i>
                 </div>
-                <p class="text-xl font-bold text-white font-space">{{ number_format($profile->views_count) }}</p>
-                <p class="text-[11px] text-emerald-400">+{{ number_format($profile->views_count) }} views</p>
+                <p class="text-xl font-bold text-white font-space">{{ number_format($totalViews) }}</p>
+                <p class="text-[11px] text-emerald-400">+{{ number_format($currentWeekViews) }} in the last 7 days</p>
             </x-admin.card>
 
             <x-admin.card class="p-5 space-y-2 flex flex-col justify-between">

@@ -10,6 +10,7 @@ use App\Models\Profile;
 use GeoIp2\Database\Reader;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Cache;
@@ -67,10 +68,16 @@ class ProfileController extends Controller
 
     private function recordAnalytics(int $profileId, string $column, int $amount = 1): void
     {
-        $analytic = Analytic::firstOrCreate(
-            ['profile_id' => $profileId, 'date' => now()->toDateString()],
-            ['views' => 0, 'clicks' => 0],
-        );
+        try {
+            $analytic = Analytic::firstOrCreate(
+                ['profile_id' => $profileId, 'date' => now()->toDateString()],
+                ['views' => 0, 'clicks' => 0],
+            );
+        } catch (UniqueConstraintViolationException) {
+            $analytic = Analytic::where('profile_id', $profileId)
+                ->whereDate('date', now()->toDateString())
+                ->firstOrFail();
+        }
 
         $analytic->increment($column, $amount);
 
@@ -80,14 +87,57 @@ class ProfileController extends Controller
 
         $countryCode = $this->resolveCountryCode();
 
-        if (! $countryCode) {
-            return;
+        if ($countryCode) {
+            $countries = $analytic->countries ?? [];
+            $countries[$countryCode] = ($countries[$countryCode] ?? 0) + $amount;
+            $analytic->update(['countries' => $countries]);
         }
 
-        $countries = $analytic->countries ?? [];
-        $countries[$countryCode] = ($countries[$countryCode] ?? 0) + $amount;
+        $referrerSource = $this->resolveReferrerSource();
+        $referrers = $analytic->referrers ?? [];
+        $referrers[$referrerSource] = ($referrers[$referrerSource] ?? 0) + $amount;
 
-        $analytic->update(['countries' => $countries]);
+        $deviceType = $this->resolveDeviceType();
+        $devices = $analytic->devices ?? [];
+        $devices[$deviceType] = ($devices[$deviceType] ?? 0) + $amount;
+
+        $analytic->update(['referrers' => $referrers, 'devices' => $devices]);
+    }
+
+    private function resolveDeviceType(): string
+    {
+        $userAgent = request()->userAgent();
+
+        if (! $userAgent) {
+            return 'desktop';
+        }
+
+        if (preg_match('/iPad|Tablet|PlayBook|Silk|(Android(?!.*Mobile))/i', $userAgent)) {
+            return 'tablet';
+        }
+
+        if (preg_match('/Mobile|iPhone|iPod|Android|BlackBerry|Opera Mini|IEMobile/i', $userAgent)) {
+            return 'mobile';
+        }
+
+        return 'desktop';
+    }
+
+    private function resolveReferrerSource(): string
+    {
+        $referer = request()->headers->get('referer');
+
+        if (! $referer) {
+            return 'Direct';
+        }
+
+        $host = parse_url($referer, PHP_URL_HOST);
+
+        if (! $host || $host === request()->getHost()) {
+            return 'Direct';
+        }
+
+        return preg_replace('/^www\./', '', strtolower($host));
     }
 
     private function resolveCountryCode(): ?string

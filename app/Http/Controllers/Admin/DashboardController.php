@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Analytic;
 use App\Models\Profile;
 use Illuminate\Contracts\View\View;
 
@@ -17,6 +18,13 @@ class DashboardController extends Controller
             'display_name' => auth()->user()?->name ?? 'Admin',
         ]);
 
-        return view('admin.dashboard', compact('profile'));
+        $totalViews = (int) Analytic::where('profile_id', $profile->id)->sum('views');
+
+        $currentWeekViews = (int) Analytic::where('profile_id', $profile->id)
+            ->whereDate('date', '>=', now()->subDays(6)->toDateString())
+            ->whereDate('date', '<=', now()->toDateString())
+            ->sum('views');
+
+        return view('admin.dashboard', compact('profile', 'totalViews', 'currentWeekViews'));
     }
 }
