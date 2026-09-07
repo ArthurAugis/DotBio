@@ -66,7 +66,7 @@
         </div>
 
         <div x-show="profile.show_social_tooltips" class="p-3 bg-[#09080d] rounded-2xl border border-purple-500/20 space-y-3">
-            <x-admin.color-picker model="profile.social_tooltip_bg_color" label="Tooltip Background" />
+            <x-admin.color-picker model="profile.social_tooltip_bg_color" label="Tooltip Background" default-color="#0a0a0c" />
 
             <div class="space-y-1">
                 <label class="text-zinc-400 font-semibold text-xs">Tooltip Background Opacity</label>
@@ -74,9 +74,16 @@
                 <span class="text-purple-400 font-mono text-xs" x-text="Math.round((profile.social_tooltip_opacity ?? 1) * 100) + '%'"></span>
             </div>
 
-            <x-admin.color-picker model="profile.social_tooltip_text_color" label="Tooltip Text Color" />
-            <x-admin.color-picker model="profile.social_tooltip_border_color" label="Tooltip Border Color" />
-            <p class="text-[10px] text-zinc-500">Leave the border blank to follow the accent color.</p>
+            <x-admin.color-picker model="profile.social_tooltip_text_color" label="Tooltip Text Color" default-color="#fafafa" />
+            <x-admin.color-picker model="profile.social_tooltip_border_color" label="Tooltip Border Color" default-color="{{ $profile->accent_color ?? '#8b5cf6' }}" />
+
+            <div class="space-y-1">
+                <label class="text-zinc-400 font-semibold text-xs">Tooltip Border Width</label>
+                <input type="range" min="0" max="6" step="1" x-model="profile.social_tooltip_border_width" class="w-full accent-purple-500 cursor-pointer">
+                <span class="text-purple-400 font-mono text-xs" x-text="(profile.social_tooltip_border_width ?? 1) + 'px'"></span>
+            </div>
+
+            <p class="text-[10px] text-zinc-500">Leave the border blank to follow the accent color. Set the width to 0 to remove it.</p>
         </div>
     </div>
 

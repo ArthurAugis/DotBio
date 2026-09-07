@@ -49,6 +49,7 @@ class UpdateCustomizationRequest extends FormRequest
             'social_tooltip_opacity' => ['nullable', 'numeric', 'min:0', 'max:1'],
             'social_tooltip_text_color' => ['nullable', 'string', 'max:50'],
             'social_tooltip_border_color' => ['nullable', 'string', 'max:50'],
+            'social_tooltip_border_width' => ['nullable', 'integer', 'min:0', 'max:20'],
 
             'bio_text_color' => ['nullable', 'string', 'max:20'],
             'bio_font_size' => ['nullable', 'integer', 'min:10', 'max:32'],

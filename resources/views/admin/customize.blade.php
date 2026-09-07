@@ -97,6 +97,15 @@
             transition: opacity 0.18s ease;
             z-index: 60;
         }
+        .preview-social-tooltip::after {
+            content: '';
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border: 4px solid transparent;
+            border-top-color: var(--preview-tooltip-arrow, #8b5cf6);
+        }
         .preview-social-item:hover .preview-social-tooltip {
             opacity: 1;
         }
@@ -378,7 +387,11 @@
                                                   :style="{
                                                       background: getTooltipBgRgba(),
                                                       color: profile.social_tooltip_text_color || '#fafafa',
-                                                      borderColor: profile.social_tooltip_border_color || profile.accent_color || '#8b5cf6'
+                                                      borderColor: profile.social_tooltip_border_color || profile.accent_color || '#8b5cf6',
+                                                      borderWidth: ((profile.social_tooltip_border_width ?? 1) + 'px'),
+                                                      '--preview-tooltip-arrow': (Number(profile.social_tooltip_border_width ?? 1) > 0
+                                                          ? (profile.social_tooltip_border_color || profile.accent_color || '#8b5cf6')
+                                                          : getTooltipBgRgba())
                                                   }">{{ $link->title }}</span>
                                         </div>
                                     @endforeach
@@ -578,6 +591,7 @@
             <input type="hidden" name="social_tooltip_opacity" :value="profile.social_tooltip_opacity">
             <input type="hidden" name="social_tooltip_text_color" :value="profile.social_tooltip_text_color">
             <input type="hidden" name="social_tooltip_border_color" :value="profile.social_tooltip_border_color">
+            <input type="hidden" name="social_tooltip_border_width" :value="profile.social_tooltip_border_width">
 
             <input type="file" id="avatarFileInput" name="avatar_file" @change="submitSaveForm()">
             <input type="file" id="secondaryAvatarFileInput" name="secondary_avatar_file" @change="submitSaveForm()">

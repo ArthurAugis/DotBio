@@ -147,6 +147,8 @@
             $tooltipA = $profile->social_tooltip_opacity ?? 1;
             $tooltipBg = "rgba({$tooltipR},{$tooltipG},{$tooltipB},{$tooltipA})";
             $tooltipBorder = $profile->social_tooltip_border_color ?: ($profile->accent_color ?? '#8b5cf6');
+            $tooltipBorderWidth = $profile->social_tooltip_border_width ?? 1;
+            $tooltipArrow = $tooltipBorderWidth > 0 ? $tooltipBorder : $tooltipBg;
         @endphp
 
         .social-item {
@@ -165,7 +167,7 @@
             white-space: nowrap;
             background: {{ $tooltipBg }};
             color: {{ $profile->social_tooltip_text_color ?: '#fafafa' }};
-            border: 1px solid {{ $tooltipBorder }};
+            border: {{ $tooltipBorderWidth }}px solid {{ $tooltipBorder }};
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.45);
             opacity: 0;
             visibility: hidden;
@@ -180,7 +182,7 @@
             left: 50%;
             transform: translateX(-50%);
             border: 4px solid transparent;
-            border-top-color: {{ $tooltipBorder }};
+            border-top-color: {{ $tooltipArrow }};
         }
         .social-item:hover .social-tooltip,
         .social-item:focus-within .social-tooltip {

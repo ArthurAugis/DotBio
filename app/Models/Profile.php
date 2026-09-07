@@ -83,6 +83,7 @@ class Profile extends Model
         'social_tooltip_opacity',
         'social_tooltip_text_color',
         'social_tooltip_border_color',
+        'social_tooltip_border_width',
         'socials_glow_color',
 
         'bio_text_color',
@@ -212,6 +213,7 @@ class Profile extends Model
             'audio_opacity' => 'float',
             'discord_opacity' => 'float',
             'social_tooltip_opacity' => 'float',
+            'social_tooltip_border_width' => 'integer',
         ];
     }
 
