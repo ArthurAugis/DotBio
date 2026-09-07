@@ -136,6 +136,46 @@
             @endif
         }
 
+        .social-item {
+            position: relative;
+            display: inline-flex;
+        }
+        .social-tooltip {
+            position: absolute;
+            bottom: calc(100% + 8px);
+            left: 50%;
+            transform: translateX(-50%) translateY(4px);
+            padding: 3px 8px;
+            border-radius: 6px;
+            font-size: 11px;
+            line-height: 1.4;
+            white-space: nowrap;
+            background: rgba(10, 10, 12, 0.92);
+            color: #fafafa;
+            border: 1px solid {{ $profile->accent_color ?? '#8b5cf6' }};
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.45);
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+            transition: opacity 0.18s ease, transform 0.18s ease, visibility 0.18s;
+            z-index: 60;
+        }
+        .social-tooltip::after {
+            content: '';
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border: 4px solid transparent;
+            border-top-color: {{ $profile->accent_color ?? '#8b5cf6' }};
+        }
+        .social-item:hover .social-tooltip,
+        .social-item:focus-within .social-tooltip {
+            opacity: 1;
+            visibility: visible;
+            transform: translateX(-50%) translateY(0);
+        }
+
         /* 1. Main Global Profile Card Container */
         .custom-card-container {
             @if($profile->show_card_container)
@@ -402,13 +442,17 @@
                     @elseif($el === 'socials' && $profile->show_social_links)
                         <div class="w-full flex items-center justify-center gap-3 flex-wrap pt-1">
                             @foreach($profile->links as $link)
-                                <a href="{{ $link->url }}" 
-                                   target="_blank" 
-                                   rel="noopener noreferrer"
-                                   @click="trackClick({{ $link->id }})"
-                                   class="icon-badge p-1 text-xl flex items-center justify-center transition cursor-pointer hover-anim-{{ $link->hover_effect ? $link->hover_effect : ($profile->socials_hover_effect ?? 'none') }}">
-                                    <i class="{{ $link->icon_class }}" style="color: {{ $link->color ?: ($profile->icon_color ?: '#ffffff') }};"></i>
-                                </a>
+                                <span class="social-item">
+                                    <a href="{{ $link->url }}"
+                                       target="_blank"
+                                       rel="noopener noreferrer"
+                                       aria-label="{{ $link->title }}"
+                                       @click="trackClick({{ $link->id }})"
+                                       class="icon-badge p-1 text-xl flex items-center justify-center transition cursor-pointer hover-anim-{{ $link->hover_effect ? $link->hover_effect : ($profile->socials_hover_effect ?? 'none') }}">
+                                        <i class="{{ $link->icon_class }}" style="color: {{ $link->color ?: ($profile->icon_color ?: '#ffffff') }};"></i>
+                                    </a>
+                                    <span class="social-tooltip">{{ $link->title }}</span>
+                                </span>
                             @endforeach
                         </div>
                     @elseif($el === 'views' && $profile->show_views_count)
