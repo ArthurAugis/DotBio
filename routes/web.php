@@ -7,6 +7,7 @@ use App\Http\Controllers\Admin\CustomizeController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\LinkController;
 use App\Http\Controllers\Admin\SeoController;
+use App\Http\Controllers\Admin\UpdateController;
 use App\Http\Controllers\Api\DiscordStatusController;
 use App\Http\Controllers\Auth\DiscordController;
 use App\Http\Controllers\Auth\LoginController;
@@ -41,4 +42,10 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function (): v
     Route::put('/links/{link}', [LinkController::class, 'update'])->name('links.update');
     Route::delete('/links/{link}', [LinkController::class, 'destroy'])->name('links.destroy');
     Route::post('/links/reorder', [LinkController::class, 'reorder'])->name('links.reorder');
+
+    Route::get('/update', [UpdateController::class, 'index'])->name('update');
+    Route::get('/update/status', [UpdateController::class, 'status'])->name('update.status');
+    Route::post('/update/check', [UpdateController::class, 'check'])->name('update.check');
+    Route::post('/update/run', [UpdateController::class, 'run'])->name('update.run');
+    Route::post('/update/rollback', [UpdateController::class, 'rollback'])->name('update.rollback');
 });

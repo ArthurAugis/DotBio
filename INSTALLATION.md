@@ -295,6 +295,39 @@ post_max_size = 64M
 sudo systemctl restart php8.3-fpm
 ```
 
+### 5.7 One-click updates
+
+The admin area has an **Updates** page that compares the installed commit against
+`main` on GitHub and applies new commits for you. An hourly scheduled check keeps
+the badge in the sidebar accurate, so make sure the scheduler runs:
+
+```bash
+* * * * * cd /var/www/dotbio && php artisan schedule:run >> /dev/null 2>&1
+```
+
+Pressing **Update now** puts the site in maintenance mode, backs up the SQLite
+database, then runs `git pull`, `composer install`, `npm ci`, `npm run build` and
+`php artisan migrate --force`. The Updates page stays reachable during the run so
+you can watch the log, and a failed update offers a one-click rollback to the
+previous commit and database.
+
+For this to work the web user must own the checkout and reach the tooling:
+
+```bash
+sudo chown -R www-data:www-data /var/www/dotbio
+sudo -u www-data git -C /var/www/dotbio config --global --add safe.directory /var/www/dotbio
+```
+
+`git`, `composer` and `npm` must all be in that user's `PATH`. If you would
+rather keep updates manual, disable the button entirely:
+
+```env
+DOTBIO_SELF_UPDATE_ENABLED=false
+```
+
+Installs that were not created with `git clone` cannot self-update; the page
+detects this and tells you to update manually.
+
 ---
 
 ## 6. Troubleshooting
@@ -308,3 +341,6 @@ sudo systemctl restart php8.3-fpm
 | SSL errors from the bot on Windows | Certificate verification is relaxed only when `APP_ENV=local`. In production, install a valid CA bundle and set `curl.cainfo` in `php.ini`. |
 | Analytics show no countries | `storage/app/geoip/GeoLite2-Country.mmdb` is missing, or the visitors are on loopback addresses. |
 | Config changes have no effect | Run `php artisan config:clear`, then `php artisan config:cache` in production. |
+| Update fails on "Pulling latest code" | The checkout has local modifications, or the web user cannot write to it. Run `git status` as that user and see section 5.7. |
+| Update fails on composer or npm | Those binaries are not in the web user's `PATH`. Run the step manually over SSH, or set `DOTBIO_SELF_UPDATE_ENABLED=false`. |
+| Update button never appears | The install is not a git checkout, self-update is disabled, or the scheduler is not running the hourly version check. |

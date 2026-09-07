@@ -1,3 +1,7 @@
+@php
+    $updateAvailable = app(\App\Services\UpdateService::class)->updateAvailableFromCache();
+@endphp
+
 <aside class="admin-desktop-sidebar w-64 bg-[#121017] border-r border-white/5 flex flex-col justify-between p-4 shrink-0 select-none">
     <div class="space-y-6">
         <div class="flex items-center gap-3 px-2">
@@ -42,10 +46,21 @@
                 <span>Links</span>
             </a>
 
-            <a href="{{ route('admin.seo') }}" 
+            <a href="{{ route('admin.seo') }}"
                class="w-full flex items-center px-3 py-2.5 rounded-xl transition text-left cursor-pointer {{ request()->routeIs('admin.seo') ? 'bg-[#1e1b26] text-purple-300 font-semibold' : 'text-zinc-400 hover:text-zinc-200 hover:bg-white/5' }}">
                 <i class="fa-solid fa-magnifying-glass text-base" style="margin-right: 12px; display: inline-block;"></i>
                 <span>SEO & Favicon</span>
+            </a>
+
+            <a href="{{ route('admin.update') }}"
+               class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl transition text-left cursor-pointer {{ request()->routeIs('admin.update') ? 'bg-[#1e1b26] text-purple-300 font-semibold' : 'text-zinc-400 hover:text-zinc-200 hover:bg-white/5' }}">
+                <span class="flex items-center">
+                    <i class="fa-solid fa-cloud-arrow-down text-base" style="margin-right: 12px; display: inline-block;"></i>
+                    <span>Updates</span>
+                </span>
+                @if($updateAvailable)
+                    <span class="w-2 h-2 rounded-full bg-purple-400 shrink-0"></span>
+                @endif
             </a>
         </nav>
     </div>
@@ -152,10 +167,21 @@
                     <span>Links</span>
                 </a>
 
-                <a href="{{ route('admin.seo') }}" 
+                <a href="{{ route('admin.seo') }}"
                    class="w-full flex items-center px-4 py-3 rounded-2xl transition text-left cursor-pointer {{ request()->routeIs('admin.seo') ? 'bg-[#1e1b26] text-purple-300 font-semibold' : 'text-zinc-400 hover:text-zinc-200 hover:bg-white/5' }}">
                     <i class="fa-solid fa-magnifying-glass text-lg text-purple-400" style="margin-right: 16px; display: inline-block;"></i>
                     <span>SEO & Favicon</span>
+                </a>
+
+                <a href="{{ route('admin.update') }}"
+                   class="w-full flex items-center justify-between px-4 py-3 rounded-2xl transition text-left cursor-pointer {{ request()->routeIs('admin.update') ? 'bg-[#1e1b26] text-purple-300 font-semibold' : 'text-zinc-300 hover:text-white hover:bg-white/5' }}">
+                    <span class="flex items-center">
+                        <i class="fa-solid fa-cloud-arrow-down text-lg text-purple-400" style="margin-right: 16px; display: inline-block;"></i>
+                        <span>Updates</span>
+                    </span>
+                    @if($updateAvailable)
+                        <span class="w-2 h-2 rounded-full bg-purple-400 shrink-0"></span>
+                    @endif
                 </a>
             </nav>
         </div>
