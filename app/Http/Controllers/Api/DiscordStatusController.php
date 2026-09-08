@@ -9,6 +9,7 @@ use App\Http\Requests\UpdateDiscordStatusRequest;
 use App\Models\Profile;
 use App\Services\DiscordApi;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Cache;
 
 class DiscordStatusController extends Controller
 {
@@ -20,7 +21,9 @@ class DiscordStatusController extends Controller
             return response()->json(['status' => 'offline', 'activity' => '']);
         }
 
-        if (! $profile->discord_avatar_decoration_url || ! $profile->discord_clan_badge_url) {
+        $missingAssets = ! $profile->discord_avatar_decoration_url || ! $profile->discord_clan_badge_url;
+
+        if ($missingAssets && Cache::add('discord-assets-lookup:'.$discordId, true, now()->addHour())) {
             $assets = DiscordApi::make()->profileAssets($discordId);
 
             if ($assets !== []) {

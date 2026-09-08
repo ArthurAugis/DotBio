@@ -11,16 +11,15 @@ class UpdateDiscordStatusRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        $expected = config('services.discord.status_secret')
-            ?? config('services.discord.bot_token');
+        $expected = config('services.discord.status_secret');
 
-        if (! $expected) {
+        if (! is_string($expected) || $expected === '') {
             return false;
         }
 
-        $provided = $this->header('X-Bot-Secret') ?? $this->input('bot_secret');
+        $provided = $this->header('X-Bot-Secret');
 
-        return is_string($provided) && hash_equals((string) $expected, $provided);
+        return is_string($provided) && hash_equals($expected, $provided);
     }
 
     public function rules(): array
@@ -29,12 +28,11 @@ class UpdateDiscordStatusRequest extends FormRequest
             'discord_id' => ['required', 'string'],
             'status' => ['required', 'string', 'in:online,idle,dnd,offline'],
             'activity' => ['nullable', 'string'],
-            'bot_secret' => ['nullable', 'string'],
         ];
     }
 
     protected function failedAuthorization(): never
     {
-        throw new HttpException(401, 'Unauthorized: invalid or missing bot secret key.');
+        throw new HttpException(401, 'Unauthorized: set DISCORD_STATUS_SECRET and send it in the X-Bot-Secret header.');
     }
 }

@@ -123,7 +123,7 @@ https://discord.com/api/oauth2/authorize?client_id=YOUR_CLIENT_ID&permissions=0&
 php artisan discord:bot
 ```
 
-It opens a WebSocket connection to the Discord gateway, mirrors presence updates into the `profiles` table and reconnects automatically. Section 5.3 covers running it as a service.
+It opens a WebSocket connection to the Discord gateway, mirrors presence updates into the `profiles` table and reconnects automatically. Section 5.4 covers running it as a service.
 
 ### 3.5 Pushing status from an external bot (alternative)
 
@@ -136,7 +136,7 @@ curl -X POST https://your-domain.tld/api/discord/update-status \
   -d '{"discord_id":"123456789012345678","status":"online","activity":"Playing Valorant"}'
 ```
 
-Set `DISCORD_STATUS_SECRET` to a random string. If left empty, the endpoint falls back to comparing against `DISCORD_BOT_TOKEN`. The endpoint is CSRF-exempt and rejects any request without a matching secret with a `401`.
+Set `DISCORD_STATUS_SECRET` to a random string. While it is empty the endpoint stays closed and answers `401`. The secret is only read from the `X-Bot-Secret` header, never from the request body, and the endpoint is CSRF-exempt.
 
 ---
 
@@ -196,14 +196,26 @@ php artisan view:cache
 
 > `config:cache` makes `.env` unreadable at runtime. Every value the app needs is already read through `config()`, so this is safe - but re-run it after every `.env` change.
 
-### 5.2 File permissions
+### 5.2 Session cookies
+
+Once the site is served over HTTPS, pin the session cookie to it:
+
+```dotenv
+SESSION_SECURE_COOKIE=true
+SESSION_SAME_SITE=lax
+SESSION_ENCRYPT=true
+```
+
+Without `SESSION_SECURE_COOKIE`, the admin session cookie is also sent over plain HTTP.
+
+### 5.3 File permissions
 
 ```bash
 sudo chown -R www-data:www-data /var/www/dotbio/storage /var/www/dotbio/bootstrap/cache
 sudo chmod -R 775 /var/www/dotbio/storage /var/www/dotbio/bootstrap/cache
 ```
 
-### 5.3 Run the Discord bot as a service
+### 5.4 Run the Discord bot as a service
 
 Create `/etc/systemd/system/dotbio-bot.service`:
 
@@ -230,7 +242,7 @@ sudo systemctl enable --now dotbio-bot
 sudo systemctl status dotbio-bot
 ```
 
-### 5.4 Scheduler and queue
+### 5.5 Scheduler and queue
 
 Add the scheduler to the crontab of the `www-data` user:
 
@@ -238,7 +250,7 @@ Add the scheduler to the crontab of the `www-data` user:
 * * * * * cd /var/www/dotbio && php artisan schedule:run >> /dev/null 2>&1
 ```
 
-If you run the bot through systemd (5.3), remove the `discord:bot` entry from `routes/console.php` so the two do not compete.
+If you run the bot through systemd (5.4), remove the `discord:bot` entry from `routes/console.php` so the two do not compete.
 
 The queue is only used for background work; a single worker is enough:
 
@@ -246,7 +258,7 @@ The queue is only used for background work; a single worker is enough:
 php artisan queue:work --tries=3
 ```
 
-### 5.5 Nginx
+### 5.6 Nginx
 
 ```nginx
 server {
@@ -280,7 +292,7 @@ sudo nginx -t && sudo systemctl reload nginx
 sudo certbot --nginx -d your-domain.tld
 ```
 
-### 5.6 Upload limits
+### 5.7 Upload limits
 
 The customizer reads PHP's own limits to size its validation rules. To allow larger backgrounds and audio files, raise both values in `/etc/php/8.3/fpm/php.ini`:
 
@@ -293,7 +305,7 @@ post_max_size = 64M
 sudo systemctl restart php8.3-fpm
 ```
 
-### 5.7 One-click updates
+### 5.8 One-click updates
 
 The admin area has an **Updates** page that compares the installed commit against
 `main` on GitHub and applies new commits for you. An hourly scheduled check keeps
@@ -339,7 +351,7 @@ detects this and tells you to update manually.
 | SSL errors from the bot on Windows | Certificate verification is relaxed only when `APP_ENV=local`. In production, install a valid CA bundle and set `curl.cainfo` in `php.ini`. |
 | Analytics show no countries | `storage/app/geoip/GeoLite2-Country.mmdb` is missing, or the visitors are on loopback addresses. |
 | Config changes have no effect | Run `php artisan config:clear`, then `php artisan config:cache` in production. |
-| Update fails on "Pulling latest code" | The checkout has local modifications, or the web user cannot write to it. Run `git status` as that user and see section 5.7. |
+| Update fails on "Pulling latest code" | The checkout has local modifications, or the web user cannot write to it. Run `git status` as that user and see section 5.8. |
 | Update fails on composer or npm | Those binaries are not in the web user's `PATH`. Run the step manually over SSH, or set `DOTBIO_SELF_UPDATE_ENABLED=false`. |
 | Update button never appears | The install is not a git checkout, self-update is disabled, or the scheduler is not running the hourly version check. |
 | Update fails on npm with `EACCES` on `/var/www/.npm` | The npm cache was created by root. Run `sudo chown -R www-data:www-data /var/www/.npm /var/www/dotbio/node_modules`, then retry. |
