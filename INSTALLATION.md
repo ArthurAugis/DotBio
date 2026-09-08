@@ -30,12 +30,10 @@ composer setup
 php artisan db:seed
 ```
 
-This creates the admin user `admin@dotbio.local` / `password` and a starter profile with sample links.
+This creates a placeholder admin user and a starter profile with sample links.
 
-> Change the password before exposing the site. Either sign in and use Discord OAuth instead, or run:
-> ```bash
-> php artisan tinker --execute="App\Models\User::first()->update(['password' => bcrypt('your-new-password')]);"
-> ```
+> Signing in goes through Discord only, so configure the Discord integration (section 3)
+> before you need the admin area. The first Discord account to sign in takes over the profile.
 
 ### 1.4 Run it
 

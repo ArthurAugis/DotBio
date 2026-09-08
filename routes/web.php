@@ -23,7 +23,6 @@ Route::get('/api/discord-status/{discordId}', [DiscordStatusController::class, '
 Route::post('/api/discord/update-status', [DiscordStatusController::class, 'updateStatus'])->name('api.discord.update_status');
 
 Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
-Route::post('/login', [LoginController::class, 'login']);
 Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 
 Route::get('/auth/discord', [DiscordController::class, 'redirect'])->name('auth.discord');

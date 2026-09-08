@@ -37,13 +37,10 @@ php artisan serve
 
 `composer setup` installs dependencies, creates `.env`, generates the application key, runs the migrations, links the storage disk and builds the front-end assets.
 
-The seeder creates an admin account:
+The seeder creates a starter profile with sample links.
 
-| Email | Password |
-| --- | --- |
-| `admin@dotbio.local` | `password` |
-
-Change it immediately, and see [INSTALLATION.md](INSTALLATION.md) for Discord, GeoIP and production deployment.
+Signing in goes through Discord only, so set up the Discord integration before you need the
+admin area. See [INSTALLATION.md](INSTALLATION.md) for Discord, GeoIP and production deployment.
 
 ## Development
 

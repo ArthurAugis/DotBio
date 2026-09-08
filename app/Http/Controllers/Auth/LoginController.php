@@ -21,24 +21,6 @@ class LoginController extends Controller
         return view('auth.login');
     }
 
-    public function login(Request $request): RedirectResponse
-    {
-        $credentials = $request->validate([
-            'email' => ['required', 'email'],
-            'password' => ['required', 'string'],
-        ]);
-
-        if (! Auth::attempt($credentials, $request->boolean('remember'))) {
-            return back()
-                ->withErrors(['email' => 'These credentials do not match our records.'])
-                ->onlyInput('email');
-        }
-
-        $request->session()->regenerate();
-
-        return redirect()->intended(route('admin.dashboard'));
-    }
-
     public function logout(Request $request): RedirectResponse
     {
         Auth::logout();

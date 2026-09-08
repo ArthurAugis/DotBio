@@ -8,7 +8,6 @@ use App\Models\Link;
 use App\Models\Profile;
 use App\Models\User;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\Hash;
 
 class DefaultProfileSeeder extends Seeder
 {
@@ -23,10 +22,7 @@ class DefaultProfileSeeder extends Seeder
     {
         $user = User::firstOrCreate(
             ['email' => 'admin@dotbio.local'],
-            [
-                'name' => 'DotBio Admin',
-                'password' => Hash::make('password'),
-            ],
+            ['name' => 'DotBio Admin'],
         );
 
         $profile = Profile::firstOrCreate(
