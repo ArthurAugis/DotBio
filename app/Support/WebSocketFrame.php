@@ -17,6 +17,8 @@ final class WebSocketFrame
 
     private const LENGTH_64_BIT = 127;
 
+    public const OPCODE_CLOSE = 0x8;
+
     public static function encode(string $payload): string
     {
         $length = strlen($payload);
@@ -38,6 +40,20 @@ final class WebSocketFrame
         }
 
         return $frame;
+    }
+
+    public static function opcode(string $frame): int
+    {
+        return $frame === '' ? 0 : ord($frame[0]) & 0x0F;
+    }
+
+    public static function closeCode(string $payload): ?int
+    {
+        if (strlen($payload) < 2) {
+            return null;
+        }
+
+        return (int) (unpack('n', substr($payload, 0, 2))[1] ?? 0);
     }
 
     public static function decode(string $frame): ?string

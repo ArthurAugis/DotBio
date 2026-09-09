@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
+use App\Exceptions\GatewayClosed;
 use App\Models\Profile;
 use App\Services\DiscordApi;
 use App\Support\WebSocketFrame;
@@ -17,7 +18,7 @@ class DiscordBotWorker extends Command
 
     private const GATEWAY_URL = 'ssl://'.self::GATEWAY_HOST.':443';
 
-    private const ALL_INTENTS = 32767;
+    private const INTENTS = 259;
 
     private const OP_HEARTBEAT = 1;
 
@@ -30,6 +31,10 @@ class DiscordBotWorker extends Command
     private const DEFAULT_HEARTBEAT_MS = 41250;
 
     private const RECONNECT_DELAY_SECONDS = 5;
+
+    private const MAX_RECONNECT_DELAY_SECONDS = 300;
+
+    private const STABLE_SESSION_SECONDS = 60;
 
     protected $signature = 'discord:bot';
 
@@ -50,18 +55,32 @@ class DiscordBotWorker extends Command
         $this->api = new DiscordApi($token);
         $this->info('Connecting to the Discord gateway...');
 
+        $delay = self::RECONNECT_DELAY_SECONDS;
+
         while (true) {
+            $startedAt = time();
+
             try {
                 $this->listen($token);
+            } catch (GatewayClosed $closed) {
+                if ($closed->isFatal()) {
+                    $this->error($closed->getMessage().' '.$closed->explain());
+
+                    return self::FAILURE;
+                }
+
+                $this->warn($closed->getMessage());
             } catch (Throwable $exception) {
-                $this->error(sprintf(
-                    'Gateway connection lost (%s). Reconnecting in %d seconds.',
-                    $exception->getMessage(),
-                    self::RECONNECT_DELAY_SECONDS,
-                ));
+                $this->error('Gateway connection lost: '.$exception->getMessage());
             }
 
-            sleep(self::RECONNECT_DELAY_SECONDS);
+            $delay = time() - $startedAt >= self::STABLE_SESSION_SECONDS
+                ? self::RECONNECT_DELAY_SECONDS
+                : min($delay * 2, self::MAX_RECONNECT_DELAY_SECONDS);
+
+            $this->line(sprintf('Reconnecting in %d seconds.', $delay));
+
+            sleep($delay);
         }
     }
 
@@ -74,7 +93,7 @@ class DiscordBotWorker extends Command
                 'op' => self::OP_IDENTIFY,
                 'd' => [
                     'token' => $token,
-                    'intents' => self::ALL_INTENTS,
+                    'intents' => self::INTENTS,
                     'properties' => ['os' => PHP_OS_FAMILY, 'browser' => 'dotbio', 'device' => 'dotbio'],
                     'presence' => [
                         'status' => 'online',
@@ -152,6 +171,10 @@ class DiscordBotWorker extends Command
             $raw = fread($socket, 8192);
 
             if ($raw !== false && $raw !== '') {
+                if (WebSocketFrame::opcode($raw) === WebSocketFrame::OPCODE_CLOSE) {
+                    throw new GatewayClosed(WebSocketFrame::closeCode((string) WebSocketFrame::decode($raw)));
+                }
+
                 $payload = json_decode((string) WebSocketFrame::decode($raw), true);
 
                 if (is_array($payload)) {

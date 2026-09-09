@@ -230,7 +230,8 @@ Group=www-data
 WorkingDirectory=/var/www/dotbio
 ExecStart=/usr/bin/php artisan discord:bot
 Restart=always
-RestartSec=5
+RestartSec=30
+RestartPreventExitStatus=1
 
 [Install]
 WantedBy=multi-user.target
@@ -242,6 +243,17 @@ sudo systemctl enable --now dotbio-bot
 sudo systemctl status dotbio-bot
 ```
 
+`RestartPreventExitStatus=1` matters: when Discord rejects the connection for good
+(bad token, intents not enabled) the daemon exits with `1` instead of reconnecting.
+Without it, systemd would restart it in a loop and Discord resets the bot token after
+about a thousand connections in a short window.
+
+Run the daemon **either** through systemd **or** through the scheduler, never both.
+systemd is the default: the scheduler only starts the bot when `DOTBIO_RUN_DISCORD_BOT=true`.
+
+Do not enable both. Clearing the cache — which every update does — drops the scheduler's
+overlap lock, so the next minute starts a second daemon alongside the one already running.
+
 ### 5.5 Scheduler and queue
 
 Add the scheduler to the crontab of the `www-data` user:
@@ -250,7 +262,7 @@ Add the scheduler to the crontab of the `www-data` user:
 * * * * * cd /var/www/dotbio && php artisan schedule:run >> /dev/null 2>&1
 ```
 
-If you run the bot through systemd (5.4), remove the `discord:bot` entry from `routes/console.php` so the two do not compete.
+The scheduler only starts the presence daemon when `DOTBIO_RUN_DISCORD_BOT=true`. Leave it at `false` when systemd runs it (5.4).
 
 The queue is only used for background work; a single worker is enough:
 
@@ -348,6 +360,7 @@ detects this and tells you to update manually.
 | Uploaded images return 404 | `php artisan storage:link` was not run, or the symlink was lost during deployment. |
 | Discord login fails with a redirect error | The redirect URI in the Developer Portal does not match `DISCORD_REDIRECT_URI` exactly, scheme and trailing slash included. |
 | Presence stays offline | The bot shares no server with your account, or the privileged intents are disabled. Check `journalctl -u dotbio-bot -f`. |
+| Discord reset the bot token | The daemon was reconnecting in a loop. Check `journalctl -u dotbio-bot` for close code 4014 (privileged intents disabled) or 4004 (bad token), and make sure the bot is not started by systemd and the scheduler at the same time. |
 | SSL errors from the bot on Windows | Certificate verification is relaxed only when `APP_ENV=local`. In production, install a valid CA bundle and set `curl.cainfo` in `php.ini`. |
 | Analytics show no countries | `storage/app/geoip/GeoLite2-Country.mmdb` is missing, or the visitors are on loopback addresses. |
 | Config changes have no effect | Run `php artisan config:clear`, then `php artisan config:cache` in production. |

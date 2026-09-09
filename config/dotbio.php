@@ -12,4 +12,6 @@ return [
     'self_update_enabled' => (bool) env('DOTBIO_SELF_UPDATE_ENABLED', true),
 
     'php_binary' => env('DOTBIO_PHP_BINARY'),
+
+    'run_discord_bot_from_scheduler' => (bool) env('DOTBIO_RUN_DISCORD_BOT', false),
 ];
