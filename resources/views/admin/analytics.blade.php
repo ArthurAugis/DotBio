@@ -286,6 +286,15 @@
                 }
             });
 
+            const hideMapTooltip = () => {
+                document.querySelectorAll('.jvm-tooltip').forEach((element) => {
+                    element.style.display = 'none';
+                });
+            };
+
+            window.addEventListener('scroll', hideMapTooltip, { passive: true });
+            document.querySelector('#worldMap')?.addEventListener('mouseleave', hideMapTooltip);
+
             const devicesChartEl = document.querySelector("#apexDevicesChart");
 
             if (devicesChartEl) {
