@@ -262,6 +262,21 @@ class DiscordBotWorker extends Command
             $attributes['discord_avatar_decoration_url'] = DiscordApi::decorationUrl((string) $asset);
         }
 
+        if ($hash = data_get($presence, 'user.avatar')) {
+            $avatar = sprintf(
+                'https://cdn.discordapp.com/avatars/%s/%s.%s',
+                $discordId,
+                $hash,
+                str_starts_with((string) $hash, 'a_') ? 'gif' : 'png',
+            );
+
+            if (! $profile->avatar_url || str_contains($profile->avatar_url, 'cdn.discordapp.com/avatars/')) {
+                $attributes['avatar_url'] = $avatar;
+            }
+
+            $profile->user?->update(['avatar' => $avatar]);
+        }
+
         if ($tag = data_get($presence, 'user.clan.tag')) {
             $attributes['discord_tag'] = (string) $tag;
         }
