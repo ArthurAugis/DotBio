@@ -21,9 +21,9 @@ class DiscordApi
     }
 
     /**
-     * Fetch the decoration, clan tag and clan badge of a Discord user.
+     * Fetch the avatar, decoration, clan tag and clan badge of a Discord user.
      *
-     * @return array{discord_avatar_decoration_url?: string, discord_tag?: string, discord_clan_badge_url?: string}
+     * @return array{avatar?: string, discord_avatar_decoration_url?: string, discord_tag?: string, discord_clan_badge_url?: string}
      */
     public function profileAssets(string $discordId): array
     {
@@ -34,6 +34,10 @@ class DiscordApi
         }
 
         $assets = [];
+
+        if ($hash = data_get($user, 'avatar')) {
+            $assets['avatar'] = self::avatarUrl($discordId, (string) $hash);
+        }
 
         if ($asset = data_get($user, 'avatar_decoration_data.asset')) {
             $assets['discord_avatar_decoration_url'] = self::decorationUrl((string) $asset);
@@ -51,6 +55,13 @@ class DiscordApi
         }
 
         return $assets;
+    }
+
+    public static function avatarUrl(string $discordId, string $hash): string
+    {
+        $extension = str_starts_with($hash, 'a_') ? 'gif' : 'png';
+
+        return self::CDN_URL.'/avatars/'.$discordId.'/'.$hash.'.'.$extension;
     }
 
     public static function decorationUrl(string $asset): string

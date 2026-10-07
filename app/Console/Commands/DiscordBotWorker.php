@@ -9,6 +9,7 @@ use App\Models\Profile;
 use App\Services\DiscordApi;
 use App\Support\WebSocketFrame;
 use Illuminate\Console\Command;
+use Illuminate\Support\Arr;
 use RuntimeException;
 use Throwable;
 
@@ -263,26 +264,23 @@ class DiscordBotWorker extends Command
         }
 
         if ($hash = data_get($presence, 'user.avatar')) {
-            $avatar = sprintf(
-                'https://cdn.discordapp.com/avatars/%s/%s.%s',
-                $discordId,
-                $hash,
-                str_starts_with((string) $hash, 'a_') ? 'gif' : 'png',
-            );
-
-            if (! $profile->avatar_url || str_contains($profile->avatar_url, 'cdn.discordapp.com/avatars/')) {
-                $attributes['avatar_url'] = $avatar;
-            }
-
-            $profile->user?->update(['avatar' => $avatar]);
+            $attributes['avatar'] = DiscordApi::avatarUrl((string) $discordId, (string) $hash);
         }
 
         if ($tag = data_get($presence, 'user.clan.tag')) {
             $attributes['discord_tag'] = (string) $tag;
         }
 
-        if (! isset($attributes['discord_avatar_decoration_url'], $attributes['discord_tag'])) {
+        if (! isset($attributes['avatar'], $attributes['discord_avatar_decoration_url'], $attributes['discord_tag'])) {
             $attributes = array_merge($attributes, $this->api?->profileAssets((string) $discordId) ?? []);
+        }
+
+        if ($avatar = Arr::pull($attributes, 'avatar')) {
+            if (! $profile->avatar_url || str_contains($profile->avatar_url, 'cdn.discordapp.com/avatars/')) {
+                $attributes['avatar_url'] = $avatar;
+            }
+
+            $profile->user?->update(['avatar' => $avatar]);
         }
 
         if ($status === 'offline' && $profile->custom_discord_status !== 'offline') {
