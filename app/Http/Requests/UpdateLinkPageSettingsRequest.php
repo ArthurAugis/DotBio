@@ -25,6 +25,7 @@ class UpdateLinkPageSettingsRequest extends FormRequest
         'hover_border_color' => ['regex:/^#[0-9a-f]{6}$/i'],
         'hover_text_color' => ['regex:/^#[0-9a-f]{6}$/i'],
         'glow_color' => ['regex:/^#[0-9a-f]{6}$/i'],
+        'glow_opacity' => ['integer', 'min:0', 'max:100'],
     ];
 
     public function rules(): array

@@ -1,4 +1,5 @@
 .lp-block {
+    --lp-shadow: color-mix(in srgb, var(--lp-glow) var(--lp-glow-o, 100%), transparent);
     color: var(--lp-text);
     background-color: color-mix(in srgb, var(--lp-bg) var(--lp-bg-o), transparent);
     border: var(--lp-bw) solid color-mix(in srgb, var(--lp-border) var(--lp-border-o), transparent);
@@ -14,8 +15,8 @@
     background-color: color-mix(in srgb, var(--lp-hover-bg) var(--lp-hover-bg-o), transparent);
     border-color: var(--lp-hover-border);
 }
-:is(a, button).lp-hover-lift:hover { transform: translateY(-3px); box-shadow: 0 12px 30px -10px var(--lp-glow); }
-:is(a, button).lp-hover-scale:hover { transform: scale(1.02); box-shadow: 0 12px 30px -12px var(--lp-glow); }
-:is(a, button).lp-hover-glow:hover { box-shadow: 0 0 22px var(--lp-glow), inset 0 0 14px color-mix(in srgb, var(--lp-glow) 35%, transparent); }
+:is(a, button).lp-hover-lift:hover { transform: translateY(-3px); box-shadow: 0 12px 30px -10px var(--lp-shadow); }
+:is(a, button).lp-hover-scale:hover { transform: scale(1.02); box-shadow: 0 12px 30px -12px var(--lp-shadow); }
+:is(a, button).lp-hover-glow:hover { box-shadow: 0 0 22px var(--lp-shadow), inset 0 0 14px color-mix(in srgb, var(--lp-shadow) 35%, transparent); }
 .lp-block img.lp-thumb { transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1); }
 a.lp-block:hover img.lp-thumb { transform: scale(1.05); }

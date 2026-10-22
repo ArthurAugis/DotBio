@@ -278,6 +278,7 @@
                 --lp-hover-border: {{ $style['hover_border_color'] }};
                 --lp-hover-text: {{ $style['hover_text_color'] }};
                 --lp-glow: {{ $style['glow_color'] }};
+                --lp-glow-o: {{ $style['glow_opacity'] }}%;
             }
         @endforeach
 

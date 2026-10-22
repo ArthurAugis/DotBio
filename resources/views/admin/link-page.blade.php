@@ -156,6 +156,10 @@
                             <x-admin.color-picker model="styles[group].hover_border_color" label="Hover Border" />
                             <x-admin.color-picker model="styles[group].hover_text_color" label="Hover Title Text" />
                             <x-admin.color-picker model="styles[group].glow_color" label="Shadow / Glow" />
+                            <div class="space-y-1.5">
+                                <label class="text-zinc-400 font-semibold text-xs block">Shadow / Glow Opacity <span class="text-purple-400 font-mono" x-text="styles[group].glow_opacity + '%'"></span></label>
+                                <input type="range" min="0" max="100" x-model="styles[group].glow_opacity" class="w-full accent-purple-500 cursor-pointer">
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -399,6 +403,7 @@
                         '--lp-hover-border': style.hover_border_color,
                         '--lp-hover-text': style.hover_text_color,
                         '--lp-glow': style.glow_color,
+                        '--lp-glow-o': style.glow_opacity + '%',
                     };
                 },
                 openAddModal(type) {

@@ -46,6 +46,7 @@ class Profile extends Model
             'hover_border_color' => '#8b5cf6',
             'hover_text_color' => '#ffffff',
             'glow_color' => '#8b5cf6',
+            'glow_opacity' => 100,
         ],
         'card' => [
             'bg_color' => '#ffffff',
@@ -63,6 +64,7 @@ class Profile extends Model
             'hover_border_color' => '#8b5cf6',
             'hover_text_color' => '#ffffff',
             'glow_color' => '#8b5cf6',
+            'glow_opacity' => 100,
         ],
     ];
 
