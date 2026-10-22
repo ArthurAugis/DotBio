@@ -23,7 +23,7 @@
         @endif
 
         <form action="{{ route('admin.link-page.settings') }}" method="POST" class="space-y-8"
-              x-data="{ enabled: {{ $profile->link_page_enabled ? 'true' : 'false' }}, direction: '{{ $profile->link_page_direction ?? 'right' }}', buttonText: {{ json_encode($profile->link_page_button_text ?? '') }}, styles: {{ json_encode($profile->link_page_styles) }}, group: 'button' }">
+              x-data="{ enabled: {{ $profile->link_page_enabled ? 'true' : 'false' }}, direction: '{{ $profile->link_page_direction ?? 'right' }}', buttonText: {{ json_encode($profile->link_page_button_text ?? '') }}, styles: {{ json_encode($profile->link_page_styles) }}, group: 'trigger' }">
         @csrf
         <x-admin.card class="p-6 space-y-5">
             <div>
@@ -85,11 +85,12 @@
                         <i class="fa-solid fa-palette text-purple-400"></i>
                         Style
                     </h2>
-                    <p class="text-xs text-zinc-400 mt-1">Buttons cover the profile trigger and button blocks. Containers cover cards and videos.</p>
+                    <p class="text-xs text-zinc-400 mt-1">Links Button is the one on your profile, Back Button returns to it. Buttons and Containers style the blocks of the page.</p>
                 </div>
-                <div class="flex bg-[#09080d] border border-white/10 rounded-xl p-1 text-xs font-bold">
-                    <button type="button" @click="group = 'button'" class="px-3 py-1.5 rounded-lg transition cursor-pointer" :class="group === 'button' ? 'bg-purple-600 text-white' : 'text-zinc-400 hover:text-white'">Buttons</button>
-                    <button type="button" @click="group = 'card'" class="px-3 py-1.5 rounded-lg transition cursor-pointer" :class="group === 'card' ? 'bg-purple-600 text-white' : 'text-zinc-400 hover:text-white'">Containers</button>
+                <div class="flex flex-wrap bg-[#09080d] border border-white/10 rounded-xl p-1 text-xs font-bold">
+                    @foreach(['trigger' => 'Links Button', 'back' => 'Back Button', 'button' => 'Buttons', 'card' => 'Containers'] as $value => $label)
+                        <button type="button" @click="group = '{{ $value }}'" class="px-3 py-1.5 rounded-lg transition cursor-pointer whitespace-nowrap" :class="group === '{{ $value }}' ? 'bg-purple-600 text-white' : 'text-zinc-400 hover:text-white'">{{ $label }}</button>
+                    @endforeach
                 </div>
             </div>
 
@@ -116,8 +117,10 @@
                                 <label class="text-zinc-400 font-semibold text-xs block">Border Opacity <span class="text-purple-400 font-mono" x-text="styles[group].border_opacity + '%'"></span></label>
                                 <input type="range" min="0" max="100" x-model="styles[group].border_opacity" class="w-full accent-purple-500 cursor-pointer">
                             </div>
-                            <x-admin.color-picker model="styles[group].text_color" label="Title Text" />
-                            <x-admin.color-picker model="styles[group].subtitle_color" label="Subtitle Text" />
+                            <x-admin.color-picker model="styles[group].text_color" label="Text / Icon" />
+                            <div x-show="group === 'button' || group === 'card'">
+                                <x-admin.color-picker model="styles[group].subtitle_color" label="Subtitle Text" />
+                            </div>
                         </div>
                         <div class="grid sm:grid-cols-3 gap-3">
                             <div class="space-y-1.5">
@@ -154,7 +157,7 @@
                                 <input type="range" min="0" max="100" x-model="styles[group].hover_bg_opacity" class="w-full accent-purple-500 cursor-pointer">
                             </div>
                             <x-admin.color-picker model="styles[group].hover_border_color" label="Hover Border" />
-                            <x-admin.color-picker model="styles[group].hover_text_color" label="Hover Title Text" />
+                            <x-admin.color-picker model="styles[group].hover_text_color" label="Hover Text / Icon" />
                             <x-admin.color-picker model="styles[group].glow_color" label="Shadow / Glow" />
                             <div class="space-y-1.5">
                                 <label class="text-zinc-400 font-semibold text-xs block">Shadow / Glow Opacity <span class="text-purple-400 font-mono" x-text="styles[group].glow_opacity + '%'"></span></label>
@@ -167,7 +170,11 @@
                 <div class="space-y-3">
                     <p class="text-[11px] font-bold text-zinc-400 uppercase tracking-wider">Live Preview <span class="normal-case font-normal tracking-normal text-zinc-500">(hover me)</span></p>
                     <div class="rounded-2xl p-5 space-y-4" style="background: radial-gradient(circle at 25% 15%, #5b21b6 0%, transparent 55%), radial-gradient(circle at 85% 90%, #9d174d 0%, #0d0c10 70%);">
-                        <a href="#" @click.prevent :style="styleVars(styles.button)" :class="'lp-hover-' + styles.button.hover_effect"
+                        <button type="button" :style="styleVars(styles.back)" :class="'lp-hover-' + styles.back.hover_effect"
+                                class="lp-block w-10 h-10 flex items-center justify-center cursor-pointer">
+                            <i class="fa-solid fa-arrow-left text-sm"></i>
+                        </button>
+                        <a href="#" @click.prevent :style="styleVars(styles.trigger)" :class="'lp-hover-' + styles.trigger.hover_effect"
                            class="lp-block w-full flex items-center justify-between gap-3 px-5 py-3.5 text-sm font-semibold">
                             <span class="w-4"></span>
                             <span x-text="buttonText || 'Links'"></span>

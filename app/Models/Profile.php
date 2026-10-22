@@ -27,7 +27,7 @@ class Profile extends Model
     ];
 
     /**
-     * Link page style groups: "button" covers the profile trigger and button blocks, "card" covers cards and media.
+     * Link page style groups: button blocks, cards and media, the profile trigger button, the back button.
      */
     public const LINK_PAGE_STYLE_DEFAULTS = [
         'button' => [
@@ -65,6 +65,42 @@ class Profile extends Model
             'hover_text_color' => '#ffffff',
             'glow_color' => '#8b5cf6',
             'glow_opacity' => 100,
+        ],
+        'trigger' => [
+            'bg_color' => '#ffffff',
+            'bg_opacity' => 6,
+            'blur' => 14,
+            'border_color' => '#ffffff',
+            'border_opacity' => 10,
+            'border_width' => 1,
+            'radius' => 24,
+            'text_color' => '#ffffff',
+            'subtitle_color' => '#a1a1aa',
+            'hover_effect' => 'lift',
+            'hover_bg_color' => '#ffffff',
+            'hover_bg_opacity' => 10,
+            'hover_border_color' => '#8b5cf6',
+            'hover_text_color' => '#ffffff',
+            'glow_color' => '#8b5cf6',
+            'glow_opacity' => 100,
+        ],
+        'back' => [
+            'bg_color' => '#ffffff',
+            'bg_opacity' => 10,
+            'blur' => 12,
+            'border_color' => '#ffffff',
+            'border_opacity' => 10,
+            'border_width' => 1,
+            'radius' => 60,
+            'text_color' => '#ffffff',
+            'subtitle_color' => '#a1a1aa',
+            'hover_effect' => 'scale',
+            'hover_bg_color' => '#ffffff',
+            'hover_bg_opacity' => 20,
+            'hover_border_color' => '#ffffff',
+            'hover_text_color' => '#ffffff',
+            'glow_color' => '#8b5cf6',
+            'glow_opacity' => 0,
         ],
     ];
 
@@ -315,6 +351,7 @@ class Profile extends Model
     {
         return Attribute::get(function (): array {
             $saved = $this->link_page_style ?? [];
+            $saved['trigger'] ??= $saved['button'] ?? [];
             $styles = [];
 
             foreach (self::LINK_PAGE_STYLE_DEFAULTS as $group => $defaults) {

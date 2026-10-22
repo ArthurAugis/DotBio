@@ -524,7 +524,7 @@
                         </div>
                     @elseif($el === 'link_page' && $profile->link_page_enabled)
                         <button type="button" @click="openLinks()"
-                                class="lp-block lp-group-button lp-hover-{{ $linkStyles['button']['hover_effect'] }} group w-full flex items-center justify-between gap-3 px-5 py-3.5 text-sm font-semibold cursor-pointer">
+                                class="lp-block lp-group-trigger lp-hover-{{ $linkStyles['trigger']['hover_effect'] }} group w-full flex items-center justify-between gap-3 px-5 py-3.5 text-sm font-semibold cursor-pointer">
                             <span class="w-4"></span>
                             <span>{{ $profile->link_page_button_text ?: 'Links' }}</span>
                             <i class="fa-solid {{ $linkArrows[$linkDirection] ?? 'fa-arrow-right' }} text-xs opacity-70 transition group-hover:opacity-100"></i>
@@ -592,11 +592,12 @@
                  class="fixed inset-0 z-30 overflow-y-auto overflow-x-hidden">
             <div class="w-full max-w-xl mx-auto px-4 py-6 sm:py-10 space-y-4">
                 <div class="lp-item relative flex items-center justify-center min-h-12" style="--i: 0">
-                    <button type="button" @click="closeLinks()" aria-label="Back"
-                            class="absolute left-0 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full flex items-center justify-center cursor-pointer bg-white/10 hover:bg-white/20 border border-white/10 backdrop-blur-md transition"
-                            style="color: {{ $profile->text_color ?? '#ffffff' }};">
-                        <i class="fa-solid {{ $linkBackArrows[$linkDirection] ?? 'fa-arrow-left' }} text-sm"></i>
-                    </button>
+                    <div class="absolute left-0 top-1/2 -translate-y-1/2">
+                        <button type="button" @click="closeLinks()" aria-label="Back"
+                                class="lp-block lp-group-back lp-hover-{{ $linkStyles['back']['hover_effect'] }} w-10 h-10 flex items-center justify-center cursor-pointer">
+                            <i class="fa-solid {{ $linkBackArrows[$linkDirection] ?? 'fa-arrow-left' }} text-sm"></i>
+                        </button>
+                    </div>
                     <div class="flex flex-col items-center gap-2 px-12 text-center">
                         <img src="{{ $avatarSrc }}" alt="{{ $profile->display_name }}" class="w-16 h-16 object-cover shadow-lg"
                              style="border-radius: {{ $profile->avatar_radius ?? 9999 }}px; border: 2px solid {{ $profile->avatar_border_color ?? 'rgba(255,255,255,0.1)' }};">
