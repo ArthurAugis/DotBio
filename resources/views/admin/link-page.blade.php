@@ -1,4 +1,10 @@
 <x-admin.layout title="DotBio - Link Page" lang="en" x-data="linkPageManager({{ json_encode($profile->linkBlocks) }})">
+    <x-slot name="head">
+        <style>
+            @include('partials.link-block-styles')
+        </style>
+    </x-slot>
+
     <div class="max-w-6xl space-y-8">
         <h1 class="text-2xl font-bold font-space">Link Page</h1>
 
@@ -16,6 +22,9 @@
             </div>
         @endif
 
+        <form action="{{ route('admin.link-page.settings') }}" method="POST" class="space-y-8"
+              x-data="{ enabled: {{ $profile->link_page_enabled ? 'true' : 'false' }}, direction: '{{ $profile->link_page_direction ?? 'right' }}', buttonText: {{ json_encode($profile->link_page_button_text ?? '') }}, styles: {{ json_encode($profile->link_page_styles) }}, group: 'button' }">
+        @csrf
         <x-admin.card class="p-6 space-y-5">
             <div>
                 <h2 class="text-base font-bold font-space text-white flex items-center gap-2">
@@ -25,8 +34,7 @@
                 <p class="text-xs text-zinc-400 mt-1">Adds a button to your profile that slides in a page of cards, buttons and videos. Also reachable directly with <span class="font-mono text-purple-300">{{ url('/') }}#links</span>.</p>
             </div>
 
-            <form action="{{ route('admin.link-page.settings') }}" method="POST" class="space-y-5" x-data="{ enabled: {{ $profile->link_page_enabled ? 'true' : 'false' }}, direction: '{{ $profile->link_page_direction ?? 'right' }}' }">
-                @csrf
+            <div class="space-y-5">
                 <input type="hidden" name="link_page_enabled" :value="enabled ? 1 : 0">
                 <input type="hidden" name="link_page_direction" :value="direction">
 
@@ -43,7 +51,7 @@
                 <div class="grid sm:grid-cols-2 gap-4">
                     <div class="space-y-1">
                         <label class="text-xs font-bold text-zinc-400">Button Text</label>
-                        <input type="text" name="link_page_button_text" value="{{ $profile->link_page_button_text }}" placeholder="Links" maxlength="60"
+                        <input type="text" name="link_page_button_text" x-model="buttonText" placeholder="Links" maxlength="60"
                                class="w-full bg-[#09080d] border border-white/10 rounded-xl px-3.5 py-2.5 text-xs text-white focus:border-purple-500 focus:outline-none">
                     </div>
                     <div class="space-y-1">
@@ -67,14 +75,131 @@
                     </div>
                 </div>
 
-                <div class="flex justify-end">
-                    <button type="submit" class="px-5 py-2.5 bg-purple-600 hover:bg-purple-500 text-white rounded-xl text-xs font-bold transition cursor-pointer flex items-center gap-2">
-                        <i class="fa-solid fa-check"></i>
-                        Save Settings
-                    </button>
-                </div>
-            </form>
+            </div>
         </x-admin.card>
+
+        <x-admin.card class="p-6 space-y-5">
+            <div class="flex flex-wrap items-center justify-between gap-3">
+                <div>
+                    <h2 class="text-base font-bold font-space text-white flex items-center gap-2">
+                        <i class="fa-solid fa-palette text-purple-400"></i>
+                        Style
+                    </h2>
+                    <p class="text-xs text-zinc-400 mt-1">Buttons cover the profile trigger and button blocks. Containers cover cards and videos.</p>
+                </div>
+                <div class="flex bg-[#09080d] border border-white/10 rounded-xl p-1 text-xs font-bold">
+                    <button type="button" @click="group = 'button'" class="px-3 py-1.5 rounded-lg transition cursor-pointer" :class="group === 'button' ? 'bg-purple-600 text-white' : 'text-zinc-400 hover:text-white'">Buttons</button>
+                    <button type="button" @click="group = 'card'" class="px-3 py-1.5 rounded-lg transition cursor-pointer" :class="group === 'card' ? 'bg-purple-600 text-white' : 'text-zinc-400 hover:text-white'">Containers</button>
+                </div>
+            </div>
+
+            <template x-for="(style, styleGroup) in styles" :key="styleGroup">
+                <div class="hidden">
+                    <template x-for="(value, field) in style" :key="field">
+                        <input type="hidden" :name="'link_page_style[' + styleGroup + '][' + field + ']'" :value="value">
+                    </template>
+                </div>
+            </template>
+
+            <div class="grid lg:grid-cols-[1fr_minmax(0,22rem)] gap-6">
+                <div class="space-y-5">
+                    <div class="space-y-3">
+                        <p class="text-[11px] font-bold text-purple-400 uppercase tracking-wider">Normal</p>
+                        <div class="grid sm:grid-cols-2 gap-3">
+                            <x-admin.color-picker model="styles[group].bg_color" label="Background" />
+                            <div class="space-y-1.5">
+                                <label class="text-zinc-400 font-semibold text-xs block">Background Opacity <span class="text-purple-400 font-mono" x-text="styles[group].bg_opacity + '%'"></span></label>
+                                <input type="range" min="0" max="100" x-model="styles[group].bg_opacity" class="w-full accent-purple-500 cursor-pointer">
+                            </div>
+                            <x-admin.color-picker model="styles[group].border_color" label="Border" />
+                            <div class="space-y-1.5">
+                                <label class="text-zinc-400 font-semibold text-xs block">Border Opacity <span class="text-purple-400 font-mono" x-text="styles[group].border_opacity + '%'"></span></label>
+                                <input type="range" min="0" max="100" x-model="styles[group].border_opacity" class="w-full accent-purple-500 cursor-pointer">
+                            </div>
+                            <x-admin.color-picker model="styles[group].text_color" label="Title Text" />
+                            <x-admin.color-picker model="styles[group].subtitle_color" label="Subtitle Text" />
+                        </div>
+                        <div class="grid sm:grid-cols-3 gap-3">
+                            <div class="space-y-1.5">
+                                <label class="text-zinc-400 font-semibold text-xs block">Border Radius <span class="text-purple-400 font-mono" x-text="styles[group].radius + 'px'"></span></label>
+                                <input type="range" min="0" max="60" x-model="styles[group].radius" class="w-full accent-purple-500 cursor-pointer">
+                            </div>
+                            <div class="space-y-1.5">
+                                <label class="text-zinc-400 font-semibold text-xs block">Border Width <span class="text-purple-400 font-mono" x-text="styles[group].border_width + 'px'"></span></label>
+                                <input type="range" min="0" max="10" x-model="styles[group].border_width" class="w-full accent-purple-500 cursor-pointer">
+                            </div>
+                            <div class="space-y-1.5">
+                                <label class="text-zinc-400 font-semibold text-xs block">Background Blur <span class="text-purple-400 font-mono" x-text="styles[group].blur + 'px'"></span></label>
+                                <input type="range" min="0" max="40" x-model="styles[group].blur" class="w-full accent-purple-500 cursor-pointer">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="space-y-3">
+                        <p class="text-[11px] font-bold text-purple-400 uppercase tracking-wider">Hover</p>
+                        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                            @foreach(['none' => ['None', 'fa-ban'], 'lift' => ['Lift', 'fa-arrow-up-long'], 'scale' => ['Zoom', 'fa-magnifying-glass-plus'], 'glow' => ['Neon Glow', 'fa-wand-magic-sparkles']] as $value => [$label, $icon])
+                                <button type="button" @click="styles[group].hover_effect = '{{ $value }}'"
+                                        class="p-2.5 rounded-xl border text-xs font-bold transition cursor-pointer flex items-center justify-center gap-2"
+                                        :class="styles[group].hover_effect === '{{ $value }}' ? 'bg-purple-600/20 border-purple-500/50 text-purple-200' : 'bg-white/5 border-white/10 text-zinc-400 hover:text-white hover:bg-white/10'">
+                                    <i class="fa-solid {{ $icon }}"></i>
+                                    {{ $label }}
+                                </button>
+                            @endforeach
+                        </div>
+                        <div class="grid sm:grid-cols-2 gap-3">
+                            <x-admin.color-picker model="styles[group].hover_bg_color" label="Hover Background" />
+                            <div class="space-y-1.5">
+                                <label class="text-zinc-400 font-semibold text-xs block">Hover Background Opacity <span class="text-purple-400 font-mono" x-text="styles[group].hover_bg_opacity + '%'"></span></label>
+                                <input type="range" min="0" max="100" x-model="styles[group].hover_bg_opacity" class="w-full accent-purple-500 cursor-pointer">
+                            </div>
+                            <x-admin.color-picker model="styles[group].hover_border_color" label="Hover Border" />
+                            <x-admin.color-picker model="styles[group].hover_text_color" label="Hover Title Text" />
+                            <x-admin.color-picker model="styles[group].glow_color" label="Shadow / Glow" />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="space-y-3">
+                    <p class="text-[11px] font-bold text-zinc-400 uppercase tracking-wider">Live Preview <span class="normal-case font-normal tracking-normal text-zinc-500">(hover me)</span></p>
+                    <div class="rounded-2xl p-5 space-y-4" style="background: radial-gradient(circle at 25% 15%, #5b21b6 0%, transparent 55%), radial-gradient(circle at 85% 90%, #9d174d 0%, #0d0c10 70%);">
+                        <a href="#" @click.prevent :style="styleVars(styles.button)" :class="'lp-hover-' + styles.button.hover_effect"
+                           class="lp-block w-full flex items-center justify-between gap-3 px-5 py-3.5 text-sm font-semibold">
+                            <span class="w-4"></span>
+                            <span x-text="buttonText || 'Links'"></span>
+                            <i class="fa-solid fa-arrow-right text-xs opacity-70"></i>
+                        </a>
+                        <a href="#" @click.prevent :style="styleVars(styles.button)" :class="'lp-hover-' + styles.button.hover_effect"
+                           class="lp-block w-full flex items-center gap-4 px-4 py-3.5 min-h-16">
+                            <span class="w-11 h-11 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex-shrink-0"></span>
+                            <span class="flex-1 min-w-0 text-center">
+                                <span class="block text-sm font-bold truncate">Button title</span>
+                                <span class="lp-sub block text-xs truncate">Subtitle</span>
+                            </span>
+                            <span class="w-11 flex-shrink-0 flex justify-end opacity-50"><i class="fa-solid fa-arrow-up-right-from-square text-xs"></i></span>
+                        </a>
+                        <a href="#" @click.prevent :style="styleVars(styles.card)" :class="'lp-hover-' + styles.card.hover_effect"
+                           class="lp-block block w-full text-left">
+                            <div class="aspect-video overflow-hidden">
+                                <div class="lp-thumb w-full h-full bg-gradient-to-br from-indigo-500 via-purple-600 to-pink-500"></div>
+                            </div>
+                            <div class="px-5 py-4">
+                                <p class="text-base font-bold leading-snug">Card title</p>
+                                <p class="lp-sub text-sm mt-0.5">Card subtitle</p>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex justify-end">
+                <button type="submit" class="px-5 py-2.5 bg-purple-600 hover:bg-purple-500 text-white rounded-xl text-xs font-bold transition cursor-pointer flex items-center gap-2">
+                    <i class="fa-solid fa-check"></i>
+                    Save Settings
+                </button>
+            </div>
+        </x-admin.card>
+        </form>
 
         <x-admin.card class="p-6 space-y-5">
             <h2 class="text-base font-bold font-space text-white flex items-center justify-between">
@@ -258,6 +383,24 @@
                 typeName(id) { return this.type(id).name; },
                 typeHint(id) { return this.type(id).hint; },
                 typeIcon(id) { return this.type(id).icon; },
+                styleVars(style) {
+                    return {
+                        '--lp-bg': style.bg_color,
+                        '--lp-bg-o': style.bg_opacity + '%',
+                        '--lp-blur': style.blur + 'px',
+                        '--lp-border': style.border_color,
+                        '--lp-border-o': style.border_opacity + '%',
+                        '--lp-bw': style.border_width + 'px',
+                        '--lp-radius': style.radius + 'px',
+                        '--lp-text': style.text_color,
+                        '--lp-sub': style.subtitle_color,
+                        '--lp-hover-bg': style.hover_bg_color,
+                        '--lp-hover-bg-o': style.hover_bg_opacity + '%',
+                        '--lp-hover-border': style.hover_border_color,
+                        '--lp-hover-text': style.hover_text_color,
+                        '--lp-glow': style.glow_color,
+                    };
+                },
                 openAddModal(type) {
                     this.block = { type, title: '', subtitle: '', url: '', media_url: '', image_url: null, remove_image: false };
                     this.modalOpen = true;

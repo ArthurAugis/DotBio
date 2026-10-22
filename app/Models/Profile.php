@@ -26,6 +26,46 @@ class Profile extends Model
         'views',
     ];
 
+    /**
+     * Link page style groups: "button" covers the profile trigger and button blocks, "card" covers cards and media.
+     */
+    public const LINK_PAGE_STYLE_DEFAULTS = [
+        'button' => [
+            'bg_color' => '#ffffff',
+            'bg_opacity' => 6,
+            'blur' => 14,
+            'border_color' => '#ffffff',
+            'border_opacity' => 10,
+            'border_width' => 1,
+            'radius' => 24,
+            'text_color' => '#ffffff',
+            'subtitle_color' => '#a1a1aa',
+            'hover_effect' => 'lift',
+            'hover_bg_color' => '#ffffff',
+            'hover_bg_opacity' => 10,
+            'hover_border_color' => '#8b5cf6',
+            'hover_text_color' => '#ffffff',
+            'glow_color' => '#8b5cf6',
+        ],
+        'card' => [
+            'bg_color' => '#ffffff',
+            'bg_opacity' => 6,
+            'blur' => 14,
+            'border_color' => '#ffffff',
+            'border_opacity' => 10,
+            'border_width' => 1,
+            'radius' => 24,
+            'text_color' => '#ffffff',
+            'subtitle_color' => '#a1a1aa',
+            'hover_effect' => 'lift',
+            'hover_bg_color' => '#ffffff',
+            'hover_bg_opacity' => 10,
+            'hover_border_color' => '#8b5cf6',
+            'hover_text_color' => '#ffffff',
+            'glow_color' => '#8b5cf6',
+        ],
+    ];
+
     protected $fillable = [
         'user_id',
         'display_name',
@@ -178,6 +218,7 @@ class Profile extends Model
         'link_page_direction',
         'link_page_button_text',
         'link_page_title',
+        'link_page_style',
     ];
 
     protected function casts(): array
@@ -186,6 +227,7 @@ class Profile extends Model
             'last_seen_at' => 'datetime',
 
             'element_order' => 'array',
+            'link_page_style' => 'array',
             'display_name_typewriter_words' => 'array',
             'bio_typewriter_words' => 'array',
 
@@ -265,6 +307,20 @@ class Profile extends Model
             ...($this->element_order ?: []),
             ...self::DEFAULT_ELEMENT_ORDER,
         ])));
+    }
+
+    protected function linkPageStyles(): Attribute
+    {
+        return Attribute::get(function (): array {
+            $saved = $this->link_page_style ?? [];
+            $styles = [];
+
+            foreach (self::LINK_PAGE_STYLE_DEFAULTS as $group => $defaults) {
+                $styles[$group] = array_merge($defaults, array_intersect_key($saved[$group] ?? [], $defaults));
+            }
+
+            return $styles;
+        });
     }
 
     protected function faviconSource(): Attribute

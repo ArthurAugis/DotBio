@@ -26,6 +26,36 @@ test('the link page settings are saved', function (): void {
         ->link_page_button_text->toBe('My links');
 });
 
+test('the link page style is saved and rendered as css variables', function (): void {
+    $profile = Profile::factory()->create(['link_page_enabled' => true]);
+    $style = Profile::LINK_PAGE_STYLE_DEFAULTS;
+    $style['button']['radius'] = 8;
+    $style['card']['bg_color'] = '#123456';
+
+    $this->actingAs($profile->user)->post('/admin/link-page/settings', [
+        'link_page_enabled' => 1,
+        'link_page_direction' => 'right',
+        'link_page_style' => $style,
+    ])->assertSessionHasNoErrors();
+
+    expect($profile->fresh()->link_page_styles['button']['radius'])->toEqual(8);
+
+    auth()->logout();
+    $this->get('/')->assertSee('--lp-radius: 8px;', false)->assertSee('--lp-bg: #123456;', false);
+});
+
+test('the link page style rejects values that could break the css', function (): void {
+    $profile = Profile::factory()->create();
+    $style = Profile::LINK_PAGE_STYLE_DEFAULTS;
+    $style['button']['bg_color'] = 'red;} body{display:none';
+
+    $this->actingAs($profile->user)->post('/admin/link-page/settings', [
+        'link_page_enabled' => 1,
+        'link_page_direction' => 'right',
+        'link_page_style' => $style,
+    ])->assertSessionHasErrors('link_page_style.button.bg_color');
+});
+
 test('a block is appended at the end of the page', function (): void {
     $profile = Profile::factory()->create();
     LinkBlock::create(['profile_id' => $profile->id, 'type' => 'heading', 'title' => 'Music', 'sort_order' => 3]);

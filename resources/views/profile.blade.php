@@ -244,11 +244,6 @@
             border: 1px solid rgba(255, 255, 255, 0.05);
         }
 
-        @php
-            $linkAccent = $profile->accent_color ?? '#8b5cf6';
-            $linkRadius = min(28, (int) ($profile->border_radius ?? 24));
-        @endphp
-
         .lp-anim { transition: transform 0.7s cubic-bezier(0.77, 0, 0.18, 1), opacity 0.7s ease, filter 0.7s ease; }
         .lp-on { transform: none; opacity: 1; filter: none; }
 
@@ -265,23 +260,26 @@
         @keyframes lpItemIn { from { opacity: 0; transform: translateY(18px) scale(0.98); } to { opacity: 1; transform: none; } }
         .lp-open .lp-item { animation: lpItemIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) both; animation-delay: calc(var(--i, 0) * 70ms + 250ms); }
 
-        .lp-block {
-            background: rgba(255, 255, 255, 0.06);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: {{ $linkRadius }}px;
-            backdrop-filter: blur(14px);
-            -webkit-backdrop-filter: blur(14px);
-            overflow: hidden;
-            transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease;
-        }
-        a.lp-block:hover, button.lp-block:hover {
-            transform: translateY(-3px);
-            border-color: {{ $linkAccent }};
-            background-color: rgba(255, 255, 255, 0.1);
-            box-shadow: 0 12px 30px -10px {{ $linkAccent }};
-        }
-        .lp-block img.lp-thumb { transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1); }
-        a.lp-block:hover img.lp-thumb { transform: scale(1.05); }
+        @include('partials.link-block-styles')
+
+        @foreach($profile->link_page_styles as $group => $style)
+            .lp-group-{{ $group }} {
+                --lp-bg: {{ $style['bg_color'] }};
+                --lp-bg-o: {{ $style['bg_opacity'] }}%;
+                --lp-blur: {{ $style['blur'] }}px;
+                --lp-border: {{ $style['border_color'] }};
+                --lp-border-o: {{ $style['border_opacity'] }}%;
+                --lp-bw: {{ $style['border_width'] }}px;
+                --lp-radius: {{ $style['radius'] }}px;
+                --lp-text: {{ $style['text_color'] }};
+                --lp-sub: {{ $style['subtitle_color'] }};
+                --lp-hover-bg: {{ $style['hover_bg_color'] }};
+                --lp-hover-bg-o: {{ $style['hover_bg_opacity'] }}%;
+                --lp-hover-border: {{ $style['hover_border_color'] }};
+                --lp-hover-text: {{ $style['hover_text_color'] }};
+                --lp-glow: {{ $style['glow_color'] }};
+            }
+        @endforeach
 
         @media (prefers-reduced-motion: reduce) {
             .lp-anim, .lp-open .lp-item { transition: none; animation: none; }
@@ -344,6 +342,7 @@
         $discordScale = $profile->discord_status_scale ?: 100;
         $discordMargin = $profile->discord_margin;
         $linkDirection = $profile->link_page_direction ?? 'right';
+        $linkStyles = $profile->link_page_styles;
         $linkArrows = ['right' => 'fa-arrow-right', 'left' => 'fa-arrow-left', 'top' => 'fa-arrow-up', 'bottom' => 'fa-arrow-down'];
         $linkBackArrows = ['right' => 'fa-arrow-left', 'left' => 'fa-arrow-right', 'top' => 'fa-arrow-up', 'bottom' => 'fa-arrow-down'];
     @endphp
@@ -524,8 +523,7 @@
                         </div>
                     @elseif($el === 'link_page' && $profile->link_page_enabled)
                         <button type="button" @click="openLinks()"
-                                class="lp-block group w-full flex items-center justify-between gap-3 px-5 py-3.5 text-sm font-semibold cursor-pointer"
-                                style="color: {{ $profile->text_color ?? '#ffffff' }};">
+                                class="lp-block lp-group-button lp-hover-{{ $linkStyles['button']['hover_effect'] }} group w-full flex items-center justify-between gap-3 px-5 py-3.5 text-sm font-semibold cursor-pointer">
                             <span class="w-4"></span>
                             <span>{{ $profile->link_page_button_text ?: 'Links' }}</span>
                             <i class="fa-solid {{ $linkArrows[$linkDirection] ?? 'fa-arrow-right' }} text-xs opacity-70 transition group-hover:opacity-100"></i>
@@ -619,7 +617,7 @@
                             <p class="pt-4 pb-1 text-xs font-bold uppercase tracking-[0.2em] text-center opacity-70" style="color: {{ $profile->text_color ?? '#ffffff' }};">{{ $block->title }}</p>
 
                         @elseif($block->type === 'card')
-                            <{{ $blockTag }} {!! $blockLink !!} class="lp-block block w-full text-left" style="color: {{ $profile->text_color ?? '#ffffff' }};">
+                            <{{ $blockTag }} {!! $blockLink !!} class="lp-block lp-group-card lp-hover-{{ $linkStyles['card']['hover_effect'] }} block w-full text-left">
                                 @if($block->image_url)
                                     <div class="aspect-video overflow-hidden">
                                         <img src="{{ asset($block->image_url) }}" alt="" loading="lazy" class="lp-thumb w-full h-full object-cover">
@@ -628,13 +626,13 @@
                                 <div class="px-5 py-4">
                                     <p class="text-base font-bold leading-snug">{{ $block->title }}</p>
                                     @if($block->subtitle)
-                                        <p class="text-sm opacity-60 mt-0.5">{{ $block->subtitle }}</p>
+                                        <p class="lp-sub text-sm mt-0.5">{{ $block->subtitle }}</p>
                                     @endif
                                 </div>
                             </{{ $blockTag }}>
 
                         @elseif($block->type === 'button')
-                            <{{ $blockTag }} {!! $blockLink !!} class="lp-block w-full flex items-center gap-4 px-4 py-3.5 min-h-16" style="color: {{ $profile->text_color ?? '#ffffff' }};">
+                            <{{ $blockTag }} {!! $blockLink !!} class="lp-block lp-group-button lp-hover-{{ $linkStyles['button']['hover_effect'] }} w-full flex items-center gap-4 px-4 py-3.5 min-h-16">
                                 @if($block->image_url)
                                     <img src="{{ asset($block->image_url) }}" alt="" loading="lazy" class="w-11 h-11 rounded-xl object-cover flex-shrink-0">
                                 @else
@@ -643,7 +641,7 @@
                                 <span class="flex-1 min-w-0 text-center">
                                     <span class="block text-sm font-bold truncate">{{ $block->title }}</span>
                                     @if($block->subtitle)
-                                        <span class="block text-xs opacity-60 truncate">{{ $block->subtitle }}</span>
+                                        <span class="lp-sub block text-xs truncate">{{ $block->subtitle }}</span>
                                     @endif
                                 </span>
                                 <span class="w-11 flex-shrink-0 flex justify-end opacity-50">
@@ -654,7 +652,7 @@
                             </{{ $blockTag }}>
 
                         @elseif($block->type === 'media' && $block->embed)
-                            <div class="lp-block w-full" style="color: {{ $profile->text_color ?? '#ffffff' }};">
+                            <div class="lp-block lp-group-card w-full">
                                 @if($block->embed['kind'] === 'video')
                                     <video src="{{ asset($block->embed['src']) }}" controls playsinline preload="metadata" class="w-full aspect-video bg-black"></video>
                                 @elseif($block->embed['height'])
@@ -670,7 +668,7 @@
                                             <p class="text-sm font-bold">{{ $block->title }}</p>
                                         @endif
                                         @if($block->subtitle)
-                                            <p class="text-xs opacity-60 mt-0.5">{{ $block->subtitle }}</p>
+                                            <p class="lp-sub text-xs mt-0.5">{{ $block->subtitle }}</p>
                                         @endif
                                     </div>
                                 @endif
