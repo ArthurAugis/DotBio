@@ -46,6 +46,12 @@
                 <span>Links</span>
             </a>
 
+            <a href="{{ route('admin.link-page.index') }}"
+               class="w-full flex items-center px-3 py-2.5 rounded-xl transition text-left cursor-pointer {{ request()->routeIs('admin.link-page.index') ? 'bg-[#1e1b26] text-purple-300 font-semibold' : 'text-zinc-400 hover:text-zinc-200 hover:bg-white/5' }}">
+                <i class="fa-solid fa-layer-group text-base" style="margin-right: 12px; display: inline-block;"></i>
+                <span>Link Page</span>
+            </a>
+
             <a href="{{ route('admin.seo') }}"
                class="w-full flex items-center px-3 py-2.5 rounded-xl transition text-left cursor-pointer {{ request()->routeIs('admin.seo') ? 'bg-[#1e1b26] text-purple-300 font-semibold' : 'text-zinc-400 hover:text-zinc-200 hover:bg-white/5' }}">
                 <i class="fa-solid fa-magnifying-glass text-base" style="margin-right: 12px; display: inline-block;"></i>
@@ -165,6 +171,12 @@
                    class="w-full flex items-center px-4 py-3 rounded-2xl transition text-left cursor-pointer {{ request()->routeIs('admin.links.index') ? 'bg-[#1e1b26] text-purple-300 font-semibold' : 'text-zinc-300 hover:text-white hover:bg-white/5' }}">
                     <i class="fa-solid fa-link text-lg text-purple-400" style="margin-right: 16px; display: inline-block;"></i>
                     <span>Links</span>
+                </a>
+
+                <a href="{{ route('admin.link-page.index') }}"
+                   class="w-full flex items-center px-4 py-3 rounded-2xl transition text-left cursor-pointer {{ request()->routeIs('admin.link-page.index') ? 'bg-[#1e1b26] text-purple-300 font-semibold' : 'text-zinc-300 hover:text-white hover:bg-white/5' }}">
+                    <i class="fa-solid fa-layer-group text-lg text-purple-400" style="margin-right: 16px; display: inline-block;"></i>
+                    <span>Link Page</span>
                 </a>
 
                 <a href="{{ route('admin.seo') }}"

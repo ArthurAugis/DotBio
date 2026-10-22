@@ -6,6 +6,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Analytic;
 use App\Models\Link;
+use App\Models\LinkBlock;
 use App\Models\Profile;
 use GeoIp2\Database\Reader;
 use Illuminate\Contracts\View\View;
@@ -25,6 +26,7 @@ class ProfileController extends Controller
         $profile = Profile::with([
             'user',
             'links' => fn (HasMany $links) => $links->where('is_visible', true)->orderBy('sort_order'),
+            'linkBlocks' => fn (HasMany $blocks) => $blocks->where('is_visible', true),
         ])->first();
 
         if (! $profile) {
@@ -53,6 +55,18 @@ class ProfileController extends Controller
 
         $link->increment('clicks_count');
         $this->recordAnalytics($link->profile_id, 'clicks');
+
+        return response()->json(['success' => true]);
+    }
+
+    public function trackBlockClick(LinkBlock $block): JsonResponse
+    {
+        if (auth()->check()) {
+            return response()->json(['success' => true]);
+        }
+
+        $block->increment('clicks_count');
+        $this->recordAnalytics($block->profile_id, 'clicks');
 
         return response()->json(['success' => true]);
     }

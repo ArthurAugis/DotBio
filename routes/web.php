@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\AnalyticsController;
 use App\Http\Controllers\Admin\CustomizeController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\LinkController;
+use App\Http\Controllers\Admin\LinkPageController;
 use App\Http\Controllers\Admin\SeoController;
 use App\Http\Controllers\Admin\UpdateController;
 use App\Http\Controllers\Api\DiscordStatusController;
@@ -18,6 +19,9 @@ Route::get('/', [ProfileController::class, 'show'])->name('profile.show');
 Route::post('/links/{link}/click', [ProfileController::class, 'trackClick'])
     ->middleware('throttle:20,1')
     ->name('links.click');
+Route::post('/blocks/{block}/click', [ProfileController::class, 'trackBlockClick'])
+    ->middleware('throttle:20,1')
+    ->name('blocks.click');
 
 Route::get('/api/discord-status/{discordId}', [DiscordStatusController::class, 'getStatus'])
     ->middleware('throttle:60,1')
@@ -47,6 +51,14 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function (): v
     Route::put('/links/{link}', [LinkController::class, 'update'])->name('links.update');
     Route::delete('/links/{link}', [LinkController::class, 'destroy'])->name('links.destroy');
     Route::post('/links/reorder', [LinkController::class, 'reorder'])->name('links.reorder');
+
+    Route::get('/link-page', [LinkPageController::class, 'index'])->name('link-page.index');
+    Route::post('/link-page/settings', [LinkPageController::class, 'settings'])->name('link-page.settings');
+    Route::post('/link-page/blocks', [LinkPageController::class, 'store'])->name('link-page.store');
+    Route::post('/link-page/blocks/reorder', [LinkPageController::class, 'reorder'])->name('link-page.reorder');
+    Route::put('/link-page/blocks/{block}', [LinkPageController::class, 'update'])->name('link-page.update');
+    Route::patch('/link-page/blocks/{block}/toggle', [LinkPageController::class, 'toggle'])->name('link-page.toggle');
+    Route::delete('/link-page/blocks/{block}', [LinkPageController::class, 'destroy'])->name('link-page.destroy');
 
     Route::get('/update', [UpdateController::class, 'index'])->name('update');
     Route::get('/update/status', [UpdateController::class, 'status'])->name('update.status');

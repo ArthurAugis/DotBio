@@ -243,6 +243,49 @@
             backdrop-filter: blur(12px);
             border: 1px solid rgba(255, 255, 255, 0.05);
         }
+
+        @php
+            $linkAccent = $profile->accent_color ?? '#8b5cf6';
+            $linkRadius = min(28, (int) ($profile->border_radius ?? 24));
+        @endphp
+
+        .lp-anim { transition: transform 0.7s cubic-bezier(0.77, 0, 0.18, 1), opacity 0.7s ease, filter 0.7s ease; }
+        .lp-on { transform: none; opacity: 1; filter: none; }
+
+        .lp-page-off-right { transform: translateX(100%); }
+        .lp-page-off-left { transform: translateX(-100%); }
+        .lp-page-off-top { transform: translateY(-100%); }
+        .lp-page-off-bottom { transform: translateY(100%); }
+
+        .lp-main-off-right { transform: translateX(-35%) scale(0.92); opacity: 0; filter: blur(8px); }
+        .lp-main-off-left { transform: translateX(35%) scale(0.92); opacity: 0; filter: blur(8px); }
+        .lp-main-off-top { transform: translateY(35%) scale(0.92); opacity: 0; filter: blur(8px); }
+        .lp-main-off-bottom { transform: translateY(-35%) scale(0.92); opacity: 0; filter: blur(8px); }
+
+        @keyframes lpItemIn { from { opacity: 0; transform: translateY(18px) scale(0.98); } to { opacity: 1; transform: none; } }
+        .lp-open .lp-item { animation: lpItemIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) both; animation-delay: calc(var(--i, 0) * 70ms + 250ms); }
+
+        .lp-block {
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: {{ $linkRadius }}px;
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            overflow: hidden;
+            transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease;
+        }
+        a.lp-block:hover, button.lp-block:hover {
+            transform: translateY(-3px);
+            border-color: {{ $linkAccent }};
+            background-color: rgba(255, 255, 255, 0.1);
+            box-shadow: 0 12px 30px -10px {{ $linkAccent }};
+        }
+        .lp-block img.lp-thumb { transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1); }
+        a.lp-block:hover img.lp-thumb { transform: scale(1.05); }
+
+        @media (prefers-reduced-motion: reduce) {
+            .lp-anim, .lp-open .lp-item { transition: none; animation: none; }
+        }
     </style>
 </head>
 
@@ -300,8 +343,19 @@
         $order = $profile->element_order_list;
         $discordScale = $profile->discord_status_scale ?: 100;
         $discordMargin = $profile->discord_margin;
+        $linkDirection = $profile->link_page_direction ?? 'right';
+        $linkArrows = ['right' => 'fa-arrow-right', 'left' => 'fa-arrow-left', 'top' => 'fa-arrow-up', 'bottom' => 'fa-arrow-down'];
+        $linkBackArrows = ['right' => 'fa-arrow-left', 'left' => 'fa-arrow-right', 'top' => 'fa-arrow-up', 'bottom' => 'fa-arrow-down'];
     @endphp
 
+    <div class="w-full flex justify-center"
+         x-show="!linksOpen"
+         x-transition:enter="lp-anim"
+         x-transition:enter-start="lp-main-off-{{ $linkDirection }}"
+         x-transition:enter-end="lp-on"
+         x-transition:leave="lp-anim"
+         x-transition:leave-start="lp-on"
+         x-transition:leave-end="lp-main-off-{{ $linkDirection }}">
     <main class="w-full mx-auto z-10 my-8 flex flex-col items-center entry-anim-{{ $profile->entry_animation ?? 'fade' }}" 
           style="max-width: {{ $profile->card_width ?? 420 }}px;"
           @if($profile->tilt_3d_enabled ?? false)
@@ -468,6 +522,14 @@
                                 </span>
                             @endforeach
                         </div>
+                    @elseif($el === 'link_page' && $profile->link_page_enabled)
+                        <button type="button" @click="openLinks()"
+                                class="lp-block group w-full flex items-center justify-between gap-3 px-5 py-3.5 text-sm font-semibold cursor-pointer"
+                                style="color: {{ $profile->text_color ?? '#ffffff' }};">
+                            <span class="w-4"></span>
+                            <span>{{ $profile->link_page_button_text ?: 'Links' }}</span>
+                            <i class="fa-solid {{ $linkArrows[$linkDirection] ?? 'fa-arrow-right' }} text-xs opacity-70 transition group-hover:opacity-100"></i>
+                        </button>
                     @elseif($el === 'views' && $profile->show_views_count)
                         <div class="pt-2 flex items-center justify-center gap-1.5 text-xs font-mono" style="color: {{ $profile->views_text_color ?? '#71717a' }};">
                             <i class="fa-regular fa-eye text-[11px]" style="color: {{ $profile->views_icon_color ?? '#71717a' }};"></i>
@@ -516,6 +578,109 @@
         @endif
 
     </main>
+    </div>
+
+    @if($profile->link_page_enabled)
+        <section x-ref="linkPage" x-cloak
+                 x-show="linksOpen"
+                 x-transition:enter="lp-anim"
+                 x-transition:enter-start="lp-page-off-{{ $linkDirection }}"
+                 x-transition:enter-end="lp-on"
+                 x-transition:leave="lp-anim"
+                 x-transition:leave-start="lp-on"
+                 x-transition:leave-end="lp-page-off-{{ $linkDirection }}"
+                 :class="{ 'lp-open': linksOpen }"
+                 class="fixed inset-0 z-30 overflow-y-auto overflow-x-hidden">
+            <div class="w-full max-w-xl mx-auto px-4 py-6 sm:py-10 space-y-4">
+                <div class="lp-item relative flex items-center justify-center min-h-12" style="--i: 0">
+                    <button type="button" @click="closeLinks()" aria-label="Back"
+                            class="absolute left-0 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full flex items-center justify-center cursor-pointer bg-white/10 hover:bg-white/20 border border-white/10 backdrop-blur-md transition"
+                            style="color: {{ $profile->text_color ?? '#ffffff' }};">
+                        <i class="fa-solid {{ $linkBackArrows[$linkDirection] ?? 'fa-arrow-left' }} text-sm"></i>
+                    </button>
+                    <div class="flex flex-col items-center gap-2 px-12 text-center">
+                        <img src="{{ $avatarSrc }}" alt="{{ $profile->display_name }}" class="w-16 h-16 object-cover shadow-lg"
+                             style="border-radius: {{ $profile->avatar_radius ?? 9999 }}px; border: 2px solid {{ $profile->avatar_border_color ?? 'rgba(255,255,255,0.1)' }};">
+                        <h2 class="text-xl font-bold tracking-tight" style="color: {{ $profile->text_color ?? '#ffffff' }};">
+                            {{ $profile->link_page_title ?: ($profile->display_name ?? 'Links') }}
+                        </h2>
+                    </div>
+                </div>
+
+                @foreach($profile->linkBlocks as $block)
+                    @php
+                        $blockTag = $block->url ? 'a' : 'div';
+                        $blockLink = $block->url
+                            ? 'href="'.e($block->url).'" target="_blank" rel="noopener noreferrer" @click="trackBlockClick('.$block->id.')"'
+                            : '';
+                    @endphp
+                    <div class="lp-item" style="--i: {{ min($loop->iteration, 12) }}">
+                        @if($block->type === 'heading')
+                            <p class="pt-4 pb-1 text-xs font-bold uppercase tracking-[0.2em] text-center opacity-70" style="color: {{ $profile->text_color ?? '#ffffff' }};">{{ $block->title }}</p>
+
+                        @elseif($block->type === 'card')
+                            <{{ $blockTag }} {!! $blockLink !!} class="lp-block block w-full text-left" style="color: {{ $profile->text_color ?? '#ffffff' }};">
+                                @if($block->image_url)
+                                    <div class="aspect-video overflow-hidden">
+                                        <img src="{{ asset($block->image_url) }}" alt="" loading="lazy" class="lp-thumb w-full h-full object-cover">
+                                    </div>
+                                @endif
+                                <div class="px-5 py-4">
+                                    <p class="text-base font-bold leading-snug">{{ $block->title }}</p>
+                                    @if($block->subtitle)
+                                        <p class="text-sm opacity-60 mt-0.5">{{ $block->subtitle }}</p>
+                                    @endif
+                                </div>
+                            </{{ $blockTag }}>
+
+                        @elseif($block->type === 'button')
+                            <{{ $blockTag }} {!! $blockLink !!} class="lp-block w-full flex items-center gap-4 px-4 py-3.5 min-h-16" style="color: {{ $profile->text_color ?? '#ffffff' }};">
+                                @if($block->image_url)
+                                    <img src="{{ asset($block->image_url) }}" alt="" loading="lazy" class="w-11 h-11 rounded-xl object-cover flex-shrink-0">
+                                @else
+                                    <span class="w-11 flex-shrink-0"></span>
+                                @endif
+                                <span class="flex-1 min-w-0 text-center">
+                                    <span class="block text-sm font-bold truncate">{{ $block->title }}</span>
+                                    @if($block->subtitle)
+                                        <span class="block text-xs opacity-60 truncate">{{ $block->subtitle }}</span>
+                                    @endif
+                                </span>
+                                <span class="w-11 flex-shrink-0 flex justify-end opacity-50">
+                                    @if($block->url)
+                                        <i class="fa-solid fa-arrow-up-right-from-square text-xs"></i>
+                                    @endif
+                                </span>
+                            </{{ $blockTag }}>
+
+                        @elseif($block->type === 'media' && $block->embed)
+                            <div class="lp-block w-full" style="color: {{ $profile->text_color ?? '#ffffff' }};">
+                                @if($block->embed['kind'] === 'video')
+                                    <video src="{{ asset($block->embed['src']) }}" controls playsinline preload="metadata" class="w-full aspect-video bg-black"></video>
+                                @elseif($block->embed['height'])
+                                    <iframe src="{{ $block->embed['src'] }}" loading="lazy" class="w-full block" style="height: {{ $block->embed['height'] }}px;"
+                                            allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" allowfullscreen></iframe>
+                                @else
+                                    <iframe src="{{ $block->embed['src'] }}" loading="lazy" class="w-full aspect-video block"
+                                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+                                @endif
+                                @if($block->title || $block->subtitle)
+                                    <div class="px-5 py-3.5 text-left">
+                                        @if($block->title)
+                                            <p class="text-sm font-bold">{{ $block->title }}</p>
+                                        @endif
+                                        @if($block->subtitle)
+                                            <p class="text-xs opacity-60 mt-0.5">{{ $block->subtitle }}</p>
+                                        @endif
+                                    </div>
+                                @endif
+                            </div>
+                        @endif
+                    </div>
+                @endforeach
+            </div>
+        </section>
+    @endif
 
     @if($profile->audio_enabled && $profile->audio_url)
         <audio id="bg-audio" loop src="{{ asset($profile->audio_url) }}"></audio>
@@ -540,8 +705,18 @@
 
                 nameTypewriterText: '',
                 bioTypewriterText: '',
+                linksOpen: false,
+                linksOpenedHere: false,
 
                 init() {
+                    if (this.profile.link_page_enabled) {
+                        this.linksOpen = location.hash === '#links';
+                        window.addEventListener('hashchange', () => this.syncLinksWithHash());
+                        window.addEventListener('keydown', (event) => {
+                            if (event.key === 'Escape' && this.linksOpen) this.closeLinks();
+                        });
+                    }
+
                     const savedMute = localStorage.getItem('dotbio_audio_muted');
                     if (savedMute !== null) {
                         this.isMuted = savedMute === 'true';
@@ -703,6 +878,42 @@
                     if (audio) {
                         audio.muted = this.isMuted;
                     }
+                },
+
+                openLinks() {
+                    this.linksOpenedHere = true;
+                    this.$refs.linkPage.scrollTop = 0;
+                    location.hash = 'links';
+                },
+
+                closeLinks() {
+                    if (this.linksOpenedHere) {
+                        history.back();
+                        return;
+                    }
+                    history.replaceState(null, '', location.pathname + location.search);
+                    this.syncLinksWithHash();
+                },
+
+                syncLinksWithHash() {
+                    this.linksOpen = location.hash === '#links';
+                    if (this.linksOpen) return;
+
+                    this.linksOpenedHere = false;
+                    setTimeout(() => {
+                        this.$refs.linkPage?.querySelectorAll('video').forEach((video) => video.pause());
+                        this.$refs.linkPage?.querySelectorAll('iframe').forEach((frame) => { frame.src = frame.src; });
+                    }, 700);
+                },
+
+                trackBlockClick(blockId) {
+                    fetch(`/blocks/${blockId}/click`, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                            'Accept': 'application/json'
+                        }
+                    });
                 },
 
                 trackClick(linkId) {

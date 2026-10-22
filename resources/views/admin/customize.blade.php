@@ -424,6 +424,15 @@
                                 </div>
                             </template>
 
+                            <template x-if="el === 'link_page' && profile.link_page_enabled">
+                                <div class="w-full flex items-center justify-between gap-3 px-5 py-3.5 text-sm font-semibold rounded-2xl bg-white/5 border border-white/10" :style="{ color: profile.text_color || '#ffffff' }">
+                                    <span class="element-badge-label">Link Page Button</span>
+                                    <span class="w-4"></span>
+                                    <span x-text="profile.link_page_button_text || 'Links'"></span>
+                                    <i class="fa-solid fa-arrow-right text-xs opacity-70"></i>
+                                </div>
+                            </template>
+
                             <template x-if="el === 'views' && profile.show_views_count">
                                 <div class="pt-1 flex items-center justify-center gap-1.5 text-xs font-mono" :style="{ color: profile.views_text_color || '#71717a' }">
                                     <span class="element-badge-label">Views Counter</span>
@@ -760,7 +769,7 @@
                 profile: initialProfile,
                 showSubmenu: false,
                 mediaModal: false,
-                elementOrder: initialProfile.element_order || ['avatar', 'display_name', 'location', 'bio', 'discord', 'socials', 'audio', 'views'],
+                elementOrder: @json($profile->element_order_list),
                 hoveredTarget: '',
                 discordStatus: 'offline',
                 discordActivityText: '',
@@ -973,6 +982,7 @@
                     if (target === 'socials') return !!this.profile.show_social_links;
                     if (target === 'audio') return !!this.profile.show_audio_player;
                     if (target === 'views') return !!this.profile.show_views_count;
+                    if (target === 'link_page') return !!this.profile.link_page_enabled;
                     return true;
                 },
 

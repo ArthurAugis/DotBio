@@ -21,6 +21,7 @@ class Profile extends Model
         'bio',
         'discord',
         'socials',
+        'link_page',
         'audio',
         'views',
     ];
@@ -172,6 +173,11 @@ class Profile extends Model
         'meta_robots',
         'favicon_type',
         'favicon_url',
+
+        'link_page_enabled',
+        'link_page_direction',
+        'link_page_button_text',
+        'link_page_title',
     ];
 
     protected function casts(): array
@@ -206,6 +212,7 @@ class Profile extends Model
             'typewriter_enabled' => 'boolean',
             'bio_typewriter_enabled' => 'boolean',
             'tilt_3d_enabled' => 'boolean',
+            'link_page_enabled' => 'boolean',
 
             'views_count' => 'integer',
             'background_blur' => 'integer',
@@ -225,6 +232,11 @@ class Profile extends Model
     public function links(): HasMany
     {
         return $this->hasMany(Link::class)->orderBy('sort_order');
+    }
+
+    public function linkBlocks(): HasMany
+    {
+        return $this->hasMany(LinkBlock::class)->orderBy('sort_order');
     }
 
     protected function avatarSource(): Attribute
@@ -249,7 +261,10 @@ class Profile extends Model
 
     protected function elementOrderList(): Attribute
     {
-        return Attribute::get(fn (): array => $this->element_order ?: self::DEFAULT_ELEMENT_ORDER);
+        return Attribute::get(fn (): array => array_values(array_unique([
+            ...($this->element_order ?: []),
+            ...self::DEFAULT_ELEMENT_ORDER,
+        ])));
     }
 
     protected function faviconSource(): Attribute
