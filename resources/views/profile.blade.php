@@ -292,7 +292,7 @@
       x-data="dotBioProfile({{ json_encode($profile) }})">
 
     @if($profile->audio_enabled && $profile->audio_url && ($profile->show_mute_icon ?? true))
-    <div x-cloak x-show="profile.show_audio_player" class="fixed top-6 left-6 z-40" x-data="{ hovered: false }">
+    <div x-cloak x-show="profile.show_audio_player" class="fixed top-6 z-40" :class="linksOpen ? 'right-6 sm:right-auto sm:left-6' : 'left-6'" x-data="{ hovered: false }">
         <button @click="toggleMute()" 
                 @mouseenter="hovered = true"
                 @mouseleave="hovered = false"
