@@ -292,18 +292,15 @@
       x-data="dotBioProfile({{ json_encode($profile) }})">
 
     @if($profile->audio_enabled && $profile->audio_url && ($profile->show_mute_icon ?? true))
-    <div x-cloak x-show="profile.show_audio_player" class="fixed top-6 z-40" :class="linksOpen ? 'right-6 sm:right-auto sm:left-6' : 'left-6'" x-data="{ hovered: false }">
-        <button @click="toggleMute()" 
-                @mouseenter="hovered = true"
-                @mouseleave="hovered = false"
-                class="transition-all duration-200 text-xl p-2.5 cursor-pointer focus:outline-none rounded-full" 
-                :style="{
-                    color: isMuted ? (hovered ? ('{{ $profile->mute_icon_hover_color }}' || '{{ $profile->mute_icon_color }}' || '#ffffff') : ('{{ $profile->mute_icon_color }}' || '#ffffff')) : (hovered ? ('{{ $profile->mute_icon_hover_unmute_color }}' || '{{ $profile->mute_icon_unmute_color }}' || '#ffffff') : ('{{ $profile->mute_icon_unmute_color }}' || '#ffffff')),
-                    backgroundColor: 'transparent'
-                }"
-                :title="isMuted ? 'Unmute Audio' : 'Mute Audio'">
-            <i class="fa-solid" :class="isMuted ? 'fa-volume-xmark' : 'fa-volume-high'"></i>
-        </button>
+    <div class="fixed top-6 left-6 z-40"
+         x-show="!linksOpen"
+         x-transition:enter="lp-anim"
+         x-transition:enter-start="lp-main-off-{{ $profile->link_page_direction ?? 'right' }}"
+         x-transition:enter-end="lp-on"
+         x-transition:leave="lp-anim"
+         x-transition:leave-start="lp-on"
+         x-transition:leave-end="lp-main-off-{{ $profile->link_page_direction ?? 'right' }}">
+        @include('partials.mute-button')
     </div>
     @endif
 
@@ -598,6 +595,11 @@
                             <i class="fa-solid {{ $linkBackArrows[$linkDirection] ?? 'fa-arrow-left' }} text-sm"></i>
                         </button>
                     </div>
+                    @if($profile->audio_enabled && $profile->audio_url && ($profile->show_mute_icon ?? true))
+                        <div class="absolute right-0 top-1/2 -translate-y-1/2">
+                            @include('partials.mute-button')
+                        </div>
+                    @endif
                     <div class="flex flex-col items-center gap-2 px-12 text-center">
                         <img src="{{ $avatarSrc }}" alt="{{ $profile->display_name }}" class="w-16 h-16 object-cover shadow-lg"
                              style="border-radius: {{ $profile->avatar_radius ?? 9999 }}px; border: 2px solid {{ $profile->avatar_border_color ?? 'rgba(255,255,255,0.1)' }};">
