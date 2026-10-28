@@ -169,13 +169,13 @@
 
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <x-admin.card class="p-6 space-y-4">
-                    <h2 class="text-sm font-semibold text-zinc-200">Most Clicked Socials</h2>
+                    <h2 class="text-sm font-semibold text-zinc-200">Most Clicked Links</h2>
 
                     <div class="space-y-2">
-                        @forelse($profile->links->sortByDesc('clicks_count') as $link)
+                        @forelse($profile->links->concat($profile->linkBlocks->whereNotNull('url'))->sortByDesc('clicks_count') as $link)
                             <div class="p-3 bg-[#09080d] border border-white/5 rounded-xl flex items-center justify-between">
                                 <div class="flex items-center gap-3">
-                                    <i class="{{ $link->icon_class }} text-purple-400 text-base"></i>
+                                    <i class="{{ $link->icon_class ?? 'fa-solid fa-hand-pointer' }} text-purple-400 text-base"></i>
                                     <span class="text-xs font-semibold text-zinc-200">{{ $link->title }}</span>
                                 </div>
                                 <span class="text-xs font-mono text-zinc-400 font-semibold">{{ number_format($link->clicks_count) }} clicks</span>

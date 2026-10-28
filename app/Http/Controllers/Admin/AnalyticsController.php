@@ -44,7 +44,7 @@ class AnalyticsController extends Controller
 
     public function index(Request $request): View
     {
-        $profile = Profile::with('links')->firstOrFail();
+        $profile = Profile::with(['links', 'linkBlocks'])->firstOrFail();
 
         $range = array_key_exists((string) $request->query('range'), self::RANGES)
             ? (string) $request->query('range')
