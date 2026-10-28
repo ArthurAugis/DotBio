@@ -11,7 +11,7 @@ test('the login page only offers discord when the owner signed up with discord',
 
     $this->get('/login')
         ->assertSuccessful()
-        ->assertSee(route('auth.discord'))
+        ->assertSee(route('auth.redirect', 'discord'))
         ->assertDontSee(route('login.store'))
         ->assertDontSee(route('register'));
 });
@@ -22,7 +22,7 @@ test('the login page only offers email when the owner signed up with a password'
     $this->get('/login')
         ->assertSuccessful()
         ->assertSee(route('login.store'))
-        ->assertDontSee(route('auth.discord'))
+        ->assertDontSee(route('auth.redirect', 'discord'))
         ->assertDontSee(route('register'));
 });
 

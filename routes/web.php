@@ -10,8 +10,8 @@ use App\Http\Controllers\Admin\LinkPageController;
 use App\Http\Controllers\Admin\SeoController;
 use App\Http\Controllers\Admin\UpdateController;
 use App\Http\Controllers\Api\DiscordStatusController;
-use App\Http\Controllers\Auth\DiscordController;
 use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\Auth\OAuthController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
@@ -38,8 +38,11 @@ Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 Route::get('/register', [RegisterController::class, 'create'])->name('register');
 Route::post('/register', [RegisterController::class, 'store'])->middleware('throttle:5,1')->name('register.store');
 
-Route::get('/auth/discord', [DiscordController::class, 'redirect'])->name('auth.discord');
-Route::get('/auth/discord/callback', [DiscordController::class, 'callback']);
+Route::get('/auth/{provider}', [OAuthController::class, 'redirect'])
+    ->whereIn('provider', OAuthController::PROVIDERS)
+    ->name('auth.redirect');
+Route::get('/auth/{provider}/callback', [OAuthController::class, 'callback'])
+    ->whereIn('provider', OAuthController::PROVIDERS);
 
 Route::middleware('auth')->prefix('admin')->name('admin.')->group(function (): void {
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');

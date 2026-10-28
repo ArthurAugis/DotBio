@@ -23,7 +23,7 @@
         @if ($errors->any())
             <div class="bg-rose-500/10 border border-rose-500/20 text-rose-400 p-3 rounded-xl text-xs space-y-1 text-left">
                 @foreach ($errors->all() as $error)
-                    <p>• {{ $error }}</p>
+                    <p>{{ $error }}</p>
                 @endforeach
             </div>
         @endif

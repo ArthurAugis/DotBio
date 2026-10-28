@@ -100,5 +100,5 @@ test('the login page offers both email and discord sign in', function (): void {
     $this->get('/login')
         ->assertSuccessful()
         ->assertSee(route('login.store'))
-        ->assertSee(route('auth.discord'));
+        ->assertSee(route('auth.redirect', 'discord'));
 });

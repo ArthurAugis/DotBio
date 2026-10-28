@@ -23,12 +23,12 @@
         @if ($errors->any())
             <div class="bg-rose-500/10 border border-rose-500/20 text-rose-400 p-3 rounded-xl text-xs space-y-1 text-left">
                 @foreach ($errors->all() as $error)
-                    <p>• {{ $error }}</p>
+                    <p>{{ $error }}</p>
                 @endforeach
             </div>
         @endif
 
-        @if($loginMethod !== 'discord')
+        @if(in_array($loginMethod, [null, 'password'], true))
         <form method="POST" action="{{ route('login.store') }}" class="space-y-3 text-left">
             @csrf
             <input type="email" name="email" value="{{ old('email') }}" placeholder="Email" required autocomplete="email"
@@ -53,15 +53,20 @@
         </div>
         @endif
 
-        @if($loginMethod !== 'password')
-        <div>
-            <a href="{{ route('auth.discord') }}"
-               class="w-full py-3 px-4 bg-[#5865F2] hover:bg-[#4752C4] text-white font-medium rounded-xl text-sm transition flex items-center justify-center gap-2.5">
-                <i class="fa-brands fa-discord text-lg"></i>
-                <span>Log in with Discord</span>
-            </a>
+        <div class="space-y-2.5">
+            @foreach([
+                'discord' => ['Discord', 'bg-[#5865F2] hover:bg-[#4752C4] text-white'],
+                'google' => ['Google', 'bg-white hover:bg-zinc-200 text-black'],
+            ] as $provider => [$label, $classes])
+                @if(in_array($loginMethod, [null, $provider], true))
+                <a href="{{ route('auth.redirect', $provider) }}"
+                   class="w-full py-3 px-4 {{ $classes }} font-medium rounded-xl text-sm transition flex items-center justify-center gap-2.5">
+                    <i class="fa-brands fa-{{ $provider }} text-lg"></i>
+                    <span>Log in with {{ $label }}</span>
+                </a>
+                @endif
+            @endforeach
         </div>
-        @endif
 
         @if($loginMethod === null)
         <p class="text-xs text-zinc-500">
