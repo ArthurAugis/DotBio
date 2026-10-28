@@ -107,6 +107,7 @@ class UpdateCustomizationRequest extends FormRequest
             'socials_hover_effect' => ['nullable', 'string', 'max:50'],
 
             'element_order' => ['nullable', 'string'],
+            'selection_colors' => ['nullable', 'string'],
 
             'views_text_color' => ['nullable', 'string', 'max:20'],
             'views_icon_color' => ['nullable', 'string', 'max:20'],

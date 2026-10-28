@@ -58,6 +58,13 @@
             }
         @endif
 
+        @foreach($profile->selection_colors ?? [] as $target => $colors)
+            .sel-{{ $target }}::selection, .sel-{{ $target }} *::selection {
+                @isset($colors['bg']) background-color: {{ $colors['bg'] }} !important; @endisset
+                @isset($colors['text']) color: {{ $colors['text'] }} !important; @endisset
+            }
+        @endforeach
+
         body {
             @if($profile->custom_font_url)
                 font-family: 'UserCustomFont', sans-serif !important;
@@ -288,7 +295,7 @@
     </style>
 </head>
 
-<body class="h-full min-h-screen relative flex flex-col items-center justify-center p-4 overflow-x-hidden select-none"
+<body class="h-full min-h-screen relative flex flex-col items-center justify-center p-4 overflow-x-hidden"
       x-data="dotBioProfile({{ json_encode($profile) }})">
 
     @if($profile->audio_enabled && $profile->audio_url && ($profile->show_mute_icon ?? true))
@@ -409,7 +416,7 @@
                             @endif
                         </div>
                     @elseif($el === 'display_name' && $profile->show_display_name)
-                        <div class="space-y-1 text-center">
+                        <div class="space-y-1 text-center sel-display_name">
                             <h1 class="font-bold tracking-tight text-3xl {{ $profile->glow_username ? 'username-glow' : '' }} {{ $profile->username_effect === 'sparkle' ? 'sparkle-text' : '' }} {{ $profile->username_effect === 'rainbow' ? 'rainbow-text' : '' }}"
                                 style="color: {{ $profile->text_color ?? '#ffffff' }};">
                                 @if($profile->typewriter_enabled && !empty($profile->display_name_typewriter_words))
@@ -427,14 +434,14 @@
                         </div>
 
                     @elseif($el === 'location' && $profile->show_location)
-                        <div>
+                        <div class="sel-location">
                             <p class="text-xs font-medium flex items-center justify-center gap-1" style="color: {{ $profile->location_text_color ?? '#a1a1aa' }};">
                                 <i class="fa-solid fa-location-dot text-[10px]" style="color: {{ $profile->location_icon_color ?? '#c084fc' }};"></i>
                                 <span>{{ $profile->location ?? 'Location' }}</span>
                             </p>
                         </div>
                     @elseif($el === 'bio' && $profile->show_bio && ($profile->bio || ($profile->bio_typewriter_enabled && !empty($profile->bio_typewriter_words))))
-                        <p class="leading-relaxed font-normal w-full" 
+                        <p class="sel-bio leading-relaxed font-normal w-full"
                            style="color: {{ $profile->bio_text_color ?? '#d4d4d8' }}; font-size: {{ $profile->bio_font_size ?? 14 }}px; text-align: {{ $profile->bio_align ?? 'center' }};">
                             @if($profile->bio_typewriter_enabled && !empty($profile->bio_typewriter_words))
                                 <span x-text="bioTypewriterText"></span><span class="animate-pulse">|</span>

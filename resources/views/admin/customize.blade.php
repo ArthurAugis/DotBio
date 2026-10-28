@@ -540,6 +540,7 @@
             <input type="hidden" name="hover_bg_color" :value="profile.hover_bg_color">
             <input type="hidden" name="selection_bg_color" :value="profile.selection_bg_color">
             <input type="hidden" name="selection_text_color" :value="profile.selection_text_color">
+            <input type="hidden" name="selection_colors" :value="JSON.stringify(profile.selection_colors || {})">
             <input type="hidden" name="audio_progress_color" :value="profile.audio_progress_color">
             <input type="hidden" name="audio_title_color" :value="profile.audio_title_color">
             <input type="hidden" name="audio_card_bg_color" :value="profile.audio_card_bg_color">
@@ -794,6 +795,8 @@
                     if (!this.profile.bio_font_size) this.profile.bio_font_size = 14;
                     if (!this.profile.bio_align) this.profile.bio_align = 'center';
                     if (!this.profile.typewriter_speed) this.profile.typewriter_speed = 90;
+                    const selectionColors = this.profile.selection_colors && !Array.isArray(this.profile.selection_colors) ? this.profile.selection_colors : {};
+                    this.profile.selection_colors = Object.fromEntries(['display_name', 'bio', 'location'].map((target) => [target, { bg: '', text: '', ...(selectionColors[target] || {}) }]));
                     if (this.profile.avatar_size == null) this.profile.avatar_size = 96;
                     if (this.profile.avatar_radius == null) this.profile.avatar_radius = 100;
                     if (this.profile.card_width == null) this.profile.card_width = 420;

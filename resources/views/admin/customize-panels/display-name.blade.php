@@ -41,4 +41,6 @@
             </button>
         </div>
     </div>
+
+    @include('admin.customize-panels.selection-colors', ['target' => 'display_name'])
 </div>

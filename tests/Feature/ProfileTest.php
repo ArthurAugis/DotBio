@@ -20,6 +20,18 @@ test('an otf custom font is accepted and keeps its extension', function (): void
     expect($profile->fresh()->custom_font_url)->toEndWith('.otf');
 });
 
+test('per-element selection colors keep only valid hex colors', function (): void {
+    $profile = Profile::factory()->create();
+    $colors = ['display_name' => ['bg' => '#ff00aa', 'text' => '#fff'], 'bio' => ['bg' => 'red;} body{display:none', 'text' => '']];
+
+    $this->actingAs($profile->user)
+        ->post('/admin/customize', ['selection_colors' => json_encode($colors)], ['Accept' => 'application/json'])
+        ->assertSuccessful();
+
+    expect($profile->fresh()->selection_colors)->toBe(['display_name' => ['bg' => '#ff00aa', 'text' => '#fff']]);
+    $this->get('/')->assertSee('.sel-display_name::selection', false)->assertSee('#ff00aa', false);
+});
+
 test('the login page renders when no profile exists yet', function (): void {
     $this->get('/login')->assertSuccessful();
 });

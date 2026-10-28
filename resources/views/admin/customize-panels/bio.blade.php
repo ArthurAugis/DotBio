@@ -61,4 +61,6 @@
             </div>
         </div>
     </div>
+
+    @include('admin.customize-panels.selection-colors', ['target' => 'bio'])
 </div>

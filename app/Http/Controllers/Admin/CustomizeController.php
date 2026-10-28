@@ -102,6 +102,10 @@ class CustomizeController extends Controller
             $validated['bio_typewriter_words'] = $this->jsonArrayValue($request->input('bio_typewriter_words'));
         }
 
+        if ($request->has('selection_colors')) {
+            $validated['selection_colors'] = $this->selectionColors($request->input('selection_colors'));
+        }
+
         $submittedBooleans = array_values(array_filter(
             self::BOOLEAN_FIELDS,
             fn (string $field): bool => $request->has($field),
@@ -117,5 +121,22 @@ class CustomizeController extends Controller
             'message' => 'Profile customized successfully.',
             'profile' => $profile->fresh(),
         ]);
+    }
+
+    private function selectionColors(mixed $value): array
+    {
+        $colors = [];
+
+        foreach (['display_name', 'bio', 'location'] as $target) {
+            foreach (['bg', 'text'] as $key) {
+                $color = $this->jsonArrayValue($value)[$target][$key] ?? null;
+
+                if (is_string($color) && preg_match('/^#[0-9a-fA-F]{3,8}$/', $color)) {
+                    $colors[$target][$key] = $color;
+                }
+            }
+        }
+
+        return $colors;
     }
 }

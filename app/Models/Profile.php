@@ -136,6 +136,7 @@ class Profile extends Model
         'hover_bg_color',
         'selection_bg_color',
         'selection_text_color',
+        'selection_colors',
 
         'show_avatar',
         'show_display_name',
@@ -267,6 +268,7 @@ class Profile extends Model
 
             'element_order' => 'array',
             'link_page_style' => 'array',
+            'selection_colors' => 'array',
             'display_name_typewriter_words' => 'array',
             'bio_typewriter_words' => 'array',
 

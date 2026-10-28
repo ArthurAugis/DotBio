@@ -14,4 +14,6 @@
             <input type="color" x-model="profile.location_icon_color" class="w-full h-8 rounded-lg border-none bg-transparent cursor-pointer">
         </div>
     </div>
+
+    @include('admin.customize-panels.selection-colors', ['target' => 'location'])
 </div>
