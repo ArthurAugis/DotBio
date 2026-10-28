@@ -23,7 +23,7 @@
         @endif
 
         <form action="{{ route('admin.link-page.settings') }}" method="POST" class="space-y-8"
-              x-data="{ enabled: {{ $profile->link_page_enabled ? 'true' : 'false' }}, direction: '{{ $profile->link_page_direction ?? 'right' }}', buttonText: {{ json_encode($profile->link_page_button_text ?? '') }}, styles: {{ json_encode($profile->link_page_styles) }}, group: 'trigger' }">
+              x-data="{ enabled: {{ $profile->link_page_enabled ? 'true' : 'false' }}, separate: {{ $profile->link_page_separate ? 'true' : 'false' }}, direction: '{{ $profile->link_page_direction ?? 'right' }}', buttonText: {{ json_encode($profile->link_page_button_text ?? '') }}, styles: {{ json_encode($profile->link_page_styles) }}, group: 'trigger' }">
         @csrf
         <x-admin.card class="p-6 space-y-5">
             <div>
@@ -36,6 +36,7 @@
 
             <div class="space-y-5">
                 <input type="hidden" name="link_page_enabled" :value="enabled ? 1 : 0">
+                <input type="hidden" name="link_page_separate" :value="separate ? 1 : 0">
                 <input type="hidden" name="link_page_direction" :value="direction">
 
                 <label class="flex items-center justify-between gap-4 p-4 bg-[#09080d] border border-white/10 rounded-2xl cursor-pointer">
@@ -48,7 +49,17 @@
                     </button>
                 </label>
 
-                <div class="grid sm:grid-cols-2 gap-4">
+                <label class="flex items-center justify-between gap-4 p-4 bg-[#09080d] border border-white/10 rounded-2xl cursor-pointer">
+                    <span>
+                        <span class="block text-sm font-bold text-white">Separate page</span>
+                        <span class="block text-xs text-zinc-400">On: a button opens the blocks on their own page. Off: the blocks are shown directly on your profile.</span>
+                    </span>
+                    <button type="button" @click="separate = !separate" class="relative w-11 h-6 rounded-full transition cursor-pointer flex-shrink-0" :class="separate ? 'bg-purple-600' : 'bg-white/10'">
+                        <span class="absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white transition-transform" :class="separate ? 'translate-x-5' : ''"></span>
+                    </button>
+                </label>
+
+                <div class="grid sm:grid-cols-2 gap-4" x-show="separate">
                     <div class="space-y-1">
                         <label class="text-xs font-bold text-zinc-400">Button Text</label>
                         <input type="text" name="link_page_button_text" x-model="buttonText" placeholder="Links" maxlength="60"
@@ -61,7 +72,7 @@
                     </div>
                 </div>
 
-                <div class="space-y-2">
+                <div class="space-y-2" x-show="separate">
                     <label class="text-xs font-bold text-zinc-400">Page slides in from</label>
                     <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
                         @foreach(['right' => ['Right', 'fa-arrow-left'], 'left' => ['Left', 'fa-arrow-right'], 'top' => ['Top', 'fa-arrow-down'], 'bottom' => ['Bottom', 'fa-arrow-up']] as $value => [$label, $icon])

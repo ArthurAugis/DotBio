@@ -102,6 +102,13 @@ test('the public profile renders visible blocks only', function (): void {
     $this->get('/')->assertSuccessful()->assertSee('Shown block')->assertDontSee('Hidden block');
 });
 
+test('blocks render on the main page when the link page is not separate', function (): void {
+    $profile = Profile::factory()->create(['link_page_enabled' => true, 'link_page_separate' => false]);
+    LinkBlock::create(['profile_id' => $profile->id, 'type' => 'button', 'title' => 'Inline block', 'url' => 'https://a.test']);
+
+    $this->get('/')->assertSuccessful()->assertSee('Inline block')->assertDontSee('x-ref="linkPage"', false);
+});
+
 test('clicking a block increments its counter', function (): void {
     $profile = Profile::factory()->create();
     $block = LinkBlock::create(['profile_id' => $profile->id, 'type' => 'button', 'title' => 'Shop', 'url' => 'https://a.test']);

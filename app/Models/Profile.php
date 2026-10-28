@@ -253,6 +253,7 @@ class Profile extends Model
         'favicon_url',
 
         'link_page_enabled',
+        'link_page_separate',
         'link_page_direction',
         'link_page_button_text',
         'link_page_title',
@@ -293,6 +294,7 @@ class Profile extends Model
             'bio_typewriter_enabled' => 'boolean',
             'tilt_3d_enabled' => 'boolean',
             'link_page_enabled' => 'boolean',
+            'link_page_separate' => 'boolean',
 
             'views_count' => 'integer',
             'background_blur' => 'integer',

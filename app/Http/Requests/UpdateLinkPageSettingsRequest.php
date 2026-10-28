@@ -32,6 +32,7 @@ class UpdateLinkPageSettingsRequest extends FormRequest
     {
         $rules = [
             'link_page_enabled' => ['required', 'boolean'],
+            'link_page_separate' => ['sometimes', 'boolean'],
             'link_page_direction' => ['required', 'in:right,left,top,bottom'],
             'link_page_button_text' => ['nullable', 'string', 'max:60'],
             'link_page_title' => ['nullable', 'string', 'max:120'],
