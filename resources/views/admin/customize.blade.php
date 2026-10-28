@@ -794,6 +794,15 @@
                     if (!this.profile.bio_font_size) this.profile.bio_font_size = 14;
                     if (!this.profile.bio_align) this.profile.bio_align = 'center';
                     if (!this.profile.typewriter_speed) this.profile.typewriter_speed = 90;
+                    if (this.profile.avatar_size == null) this.profile.avatar_size = 96;
+                    if (this.profile.avatar_radius == null) this.profile.avatar_radius = 100;
+                    if (this.profile.card_width == null) this.profile.card_width = 420;
+                    if (this.profile.border_radius == null) this.profile.border_radius = 24;
+                    if (this.profile.border_width == null) this.profile.border_width = 1;
+                    if (this.profile.card_opacity == null) this.profile.card_opacity = 1;
+                    if (this.profile.discord_status_scale == null) this.profile.discord_status_scale = 100;
+                    if (this.profile.audio_border_width == null) this.profile.audio_border_width = 1;
+                    if (this.profile.discord_border_width == null) this.profile.discord_border_width = 1;
                     if (!this.profile.bio_text_color) this.profile.bio_text_color = '#d4d4d8';
                     if (!this.profile.discord_name_color) this.profile.discord_name_color = '#ffffff';
                     if (!this.profile.discord_text_color) this.profile.discord_text_color = '#a1a1aa';
