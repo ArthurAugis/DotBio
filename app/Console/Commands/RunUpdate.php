@@ -104,16 +104,17 @@ class RunUpdate extends Command
     private function checkPrerequisites(UpdateService $updates): void
     {
         $problems = [];
+        $user = function_exists('posix_geteuid') ? (posix_getpwuid(posix_geteuid())['name'] ?? get_current_user()) : get_current_user();
 
         foreach (['git', 'composer', 'npm'] as $binary) {
             if (Process::path(base_path())->run(['sh', '-c', 'command -v '.$binary])->failed()) {
-                $problems[] = sprintf('%s is not in the PATH of the %s user.', $binary, get_current_user());
+                $problems[] = sprintf('%s is not in the PATH of the %s user.', $binary, $user);
             }
         }
 
-        foreach (['.git', 'storage', 'bootstrap/cache', 'node_modules'] as $path) {
+        foreach (['.git', 'storage', 'bootstrap/cache', 'node_modules', 'database'] as $path) {
             if (file_exists(base_path($path)) && ! is_writable(base_path($path))) {
-                $problems[] = sprintf('%s is not writable by the %s user.', $path, get_current_user());
+                $problems[] = sprintf('%s is not writable by the %s user.', $path, $user);
             }
         }
 
