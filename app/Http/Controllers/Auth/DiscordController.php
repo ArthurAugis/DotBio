@@ -34,6 +34,12 @@ class DiscordController extends Controller
                 ->withErrors(['email' => 'Discord authentication failed. Please try again.']);
         }
 
+        if (Profile::exists() && ! User::where('discord_id', $discordUser->getId())->exists()) {
+            return redirect()
+                ->route('login')
+                ->withErrors(['email' => 'This Discord account is not allowed to manage this DotBio.']);
+        }
+
         $user = User::updateOrCreate(
             ['discord_id' => $discordUser->getId()],
             [
