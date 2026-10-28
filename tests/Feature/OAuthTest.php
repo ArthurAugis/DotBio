@@ -74,7 +74,15 @@ test('the first user creates the profile with the provider avatar', function (st
         ->assertSee(route('auth.redirect', $provider))
         ->assertDontSee(route('auth.redirect', 'discord'))
         ->assertDontSee(route('login.store'));
-})->with(['google', 'github', 'twitch', 'steam', 'spotify']);
+})->with(['google', 'github', 'twitch', 'steam', 'spotify', 'patreon']);
+
+test('the login page shows every configured provider in the grid', function (): void {
+    $response = $this->get('/login');
+
+    foreach (['discord', 'google', 'github', 'twitch', 'steam', 'spotify', 'patreon'] as $provider) {
+        $response->assertSee(route('auth.redirect', $provider));
+    }
+});
 
 test('a spotify account without nickname uses its display name', function (): void {
     fakeOAuthUser('spotify', '666', ['nickname' => null, 'name' => 'Yoshi']);

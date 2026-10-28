@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "8ce3c543bd44583fa4ffc19a81944b65",
+    "content-hash": "3cabfc002688211d9fba927e778898cd",
     "packages": [
         {
             "name": "brick/math",
@@ -4117,6 +4117,56 @@
                 "source": "https://github.com/socialiteproviders/manager"
             },
             "time": "2026-03-18T22:13:24+00:00"
+        },
+        {
+            "name": "socialiteproviders/patreon",
+            "version": "5.0.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/SocialiteProviders/Patreon.git",
+                "reference": "8311da1b20c5dae2087aa6f8b5e84afaabdb3e5f"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/SocialiteProviders/Patreon/zipball/8311da1b20c5dae2087aa6f8b5e84afaabdb3e5f",
+                "reference": "8311da1b20c5dae2087aa6f8b5e84afaabdb3e5f",
+                "shasum": ""
+            },
+            "require": {
+                "ext-json": "*",
+                "php": "^8.0",
+                "socialiteproviders/manager": "^4.2"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "SocialiteProviders\\Patreon\\": ""
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Pieter Maes",
+                    "email": "maescool@gmail.com"
+                }
+            ],
+            "description": "Patreon OAuth2 Provider for Laravel Socialite",
+            "keywords": [
+                "laravel",
+                "oauth",
+                "patreon",
+                "provider",
+                "socialite"
+            ],
+            "support": {
+                "docs": "https://socialiteproviders.com/patreon",
+                "issues": "https://github.com/socialiteproviders/providers/issues",
+                "source": "https://github.com/socialiteproviders/providers"
+            },
+            "time": "2022-10-21T23:38:33+00:00"
         },
         {
             "name": "socialiteproviders/spotify",

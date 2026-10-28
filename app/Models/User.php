@@ -23,6 +23,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'twitch_id',
         'steam_id',
         'spotify_id',
+        'patreon_id',
         'avatar',
         'username',
         'password',
@@ -50,6 +51,7 @@ class User extends Authenticatable implements MustVerifyEmail
             $this->twitch_id !== null => 'twitch',
             $this->steam_id !== null => 'steam',
             $this->spotify_id !== null => 'spotify',
+            $this->patreon_id !== null => 'patreon',
             $this->password !== null => 'password',
             default => null,
         };

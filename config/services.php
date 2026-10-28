@@ -65,4 +65,10 @@ return [
         'redirect' => env('SPOTIFY_REDIRECT_URI', 'http://localhost:8000/auth/spotify/callback'),
     ],
 
+    'patreon' => [
+        'client_id' => env('PATREON_CLIENT_ID'),
+        'client_secret' => env('PATREON_CLIENT_SECRET'),
+        'redirect' => env('PATREON_REDIRECT_URI', 'http://localhost:8000/auth/patreon/callback'),
+    ],
+
 ];
