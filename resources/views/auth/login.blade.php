@@ -28,6 +28,12 @@
             </div>
         @endif
 
+        @if (session('status'))
+            <div class="bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 p-3 rounded-xl text-xs text-left">
+                {{ session('status') }}
+            </div>
+        @endif
+
         @if(in_array($loginMethod, [null, 'password'], true))
         <form method="POST" action="{{ route('login.store') }}" class="space-y-3 text-left">
             @csrf
@@ -35,10 +41,13 @@
                    class="w-full px-4 py-3 bg-[#09090b] border border-zinc-800 rounded-xl text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-zinc-600">
             <input type="password" name="password" placeholder="Password" required autocomplete="current-password"
                    class="w-full px-4 py-3 bg-[#09090b] border border-zinc-800 rounded-xl text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-zinc-600">
-            <label class="flex items-center gap-2 text-xs text-zinc-400">
-                <input type="checkbox" name="remember" value="1" class="accent-zinc-400">
-                Remember me
-            </label>
+            <div class="flex items-center justify-between text-xs">
+                <label class="flex items-center gap-2 text-zinc-400">
+                    <input type="checkbox" name="remember" value="1" class="accent-zinc-400">
+                    Remember me
+                </label>
+                <a href="{{ route('password.request') }}" class="text-zinc-400 hover:text-white transition">Forgot password?</a>
+            </div>
             <button type="submit" class="w-full py-3 px-4 bg-white hover:bg-zinc-200 text-black font-medium rounded-xl text-sm transition">
                 Log in
             </button>
