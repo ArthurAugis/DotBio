@@ -554,7 +554,7 @@
                             $audioBgA = $profile->audio_opacity ?? 1;
                             $audioBgRgba = "rgba({$audioBgR},{$audioBgG},{$audioBgB},{$audioBgA})";
                         @endphp
-                        <div class="player-card rounded-2xl p-3 w-full flex items-center justify-between gap-3 shadow-2xl mt-2 {{ $profile->audio_glow ? 'avatar-neon-ring' : '' }} hover-anim-{{ $profile->audio_hover_effect ?? 'none' }}" style="background-color: {{ $audioBgRgba }}; border: {{ $profile->audio_border_color ? ((is_numeric($profile->audio_border_width) ? $profile->audio_border_width : 1) . 'px solid ' . $profile->audio_border_color) : 'none' }};">
+                        <div class="player-card p-3 w-full flex items-center justify-between gap-3 shadow-2xl mt-2 {{ $profile->audio_glow ? 'avatar-neon-ring' : '' }} hover-anim-{{ $profile->audio_hover_effect ?? 'none' }}" style="background-color: {{ $audioBgRgba }}; border: {{ $profile->audio_border_color ? ((is_numeric($profile->audio_border_width) ? $profile->audio_border_width : 1) . 'px solid color-mix(in srgb, ' . $profile->audio_border_color . ' ' . ($profile->audio_border_opacity ?? 100) . '%, transparent)') : 'none' }}; border-radius: {{ $profile->audio_radius ?? 16 }}px; backdrop-filter: blur({{ $profile->audio_blur ?? 16 }}px); -webkit-backdrop-filter: blur({{ $profile->audio_blur ?? 16 }}px);">
 
                             <div class="flex items-center gap-3 overflow-hidden flex-1">
                                 <img src="{{ asset($audioCoverSrc) }}" class="w-10 h-10 object-cover flex-shrink-0" style="border-radius: 12px;">

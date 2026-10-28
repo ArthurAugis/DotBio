@@ -40,10 +40,30 @@
         </div>
     </div>
 
-    <div class="space-y-1">
-        <label class="text-zinc-400 font-semibold text-xs block">Border Width</label>
-        <input type="range" min="0" max="10" step="1" x-model="profile.audio_border_width" class="w-full accent-purple-500 cursor-pointer">
-        <span class="text-purple-400 font-mono text-xs" x-text="(profile.audio_border_width !== undefined && profile.audio_border_width !== null ? profile.audio_border_width : 1) + 'px'"></span>
+    <div class="grid grid-cols-2 gap-3">
+        <div class="space-y-1">
+            <label class="text-zinc-400 font-semibold text-xs block">Border Width</label>
+            <input type="range" min="0" max="10" step="1" x-model="profile.audio_border_width" class="w-full accent-purple-500 cursor-pointer">
+            <span class="text-purple-400 font-mono text-xs" x-text="(profile.audio_border_width !== undefined && profile.audio_border_width !== null ? profile.audio_border_width : 1) + 'px'"></span>
+        </div>
+        <div class="space-y-1">
+            <label class="text-zinc-400 font-semibold text-xs block">Border Opacity</label>
+            <input type="range" min="0" max="100" step="1" x-model="profile.audio_border_opacity" class="w-full accent-purple-500 cursor-pointer">
+            <span class="text-purple-400 font-mono text-xs" x-text="profile.audio_border_opacity + '%'"></span>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-2 gap-3">
+        <div class="space-y-1">
+            <label class="text-zinc-400 font-semibold text-xs block">Border Radius</label>
+            <input type="range" min="0" max="60" step="1" x-model="profile.audio_radius" class="w-full accent-purple-500 cursor-pointer">
+            <span class="text-purple-400 font-mono text-xs" x-text="profile.audio_radius + 'px'"></span>
+        </div>
+        <div class="space-y-1">
+            <label class="text-zinc-400 font-semibold text-xs block">Background Blur</label>
+            <input type="range" min="0" max="40" step="1" x-model="profile.audio_blur" class="w-full accent-purple-500 cursor-pointer">
+            <span class="text-purple-400 font-mono text-xs" x-text="profile.audio_blur + 'px'"></span>
+        </div>
     </div>
 
     <div class="p-3 bg-[#09080d] rounded-2xl border border-purple-500/20 space-y-3" x-show="profile.audio_hover_effect && profile.audio_hover_effect !== 'none'">

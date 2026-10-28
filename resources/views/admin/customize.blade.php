@@ -399,11 +399,13 @@
                             </template>
 
                             <template x-if="el === 'audio' && profile.show_audio_player">
-                                <div class="player-card rounded-2xl p-3 w-full flex items-center justify-between gap-3 shadow-2xl mt-2" 
+                                <div class="player-card p-3 w-full flex items-center justify-between gap-3 shadow-2xl mt-2" 
                                      :class="[profile.audio_glow ? 'avatar-neon-ring' : '', 'hover-anim-' + (profile.audio_hover_effect || 'none')]"
                                      :style="{ 
                                          backgroundColor: (() => { let h=(profile.audio_card_bg_color||'#000000').replace('#',''); if(h.length===3)h=h[0]+h[0]+h[1]+h[1]+h[2]+h[2]; return 'rgba('+parseInt(h.substr(0,2),16)+','+parseInt(h.substr(2,2),16)+','+parseInt(h.substr(4,2),16)+','+(profile.audio_opacity??1)+')'; })(),
-                                         border: profile.audio_border_color ? (((profile.audio_border_width !== undefined && profile.audio_border_width !== null) ? profile.audio_border_width : 1) + 'px solid ' + profile.audio_border_color) : '1px solid rgba(255, 255, 255, 0.08)'
+                                         border: profile.audio_border_color ? (((profile.audio_border_width !== undefined && profile.audio_border_width !== null) ? profile.audio_border_width : 1) + 'px solid color-mix(in srgb, ' + profile.audio_border_color + ' ' + (profile.audio_border_opacity ?? 100) + '%, transparent)') : '1px solid rgba(255, 255, 255, 0.08)',
+                                         borderRadius: (profile.audio_radius ?? 16) + 'px',
+                                         backdropFilter: 'blur(' + (profile.audio_blur ?? 16) + 'px)'
                                      }">
 
                                     <span class="element-badge-label">Audio Player</span>
@@ -566,6 +568,9 @@
             <input type="hidden" name="enter_image_url" :value="profile.enter_image_url">
             <input type="hidden" name="audio_border_color" :value="profile.audio_border_color">
             <input type="hidden" name="audio_border_width" :value="profile.audio_border_width">
+            <input type="hidden" name="audio_border_opacity" :value="profile.audio_border_opacity">
+            <input type="hidden" name="audio_radius" :value="profile.audio_radius">
+            <input type="hidden" name="audio_blur" :value="profile.audio_blur">
             <input type="hidden" name="audio_opacity" :value="profile.audio_opacity">
             <input type="hidden" name="audio_glow" :value="profile.audio_glow ? '1' : ''">
             <input type="hidden" name="avatar_glow" :value="profile.avatar_glow ? '1' : ''">
@@ -809,6 +814,9 @@
                     if (this.profile.card_opacity == null) this.profile.card_opacity = 1;
                     if (this.profile.discord_status_scale == null) this.profile.discord_status_scale = 100;
                     if (this.profile.audio_border_width == null) this.profile.audio_border_width = 1;
+                    if (this.profile.audio_border_opacity == null) this.profile.audio_border_opacity = 100;
+                    if (this.profile.audio_radius == null) this.profile.audio_radius = 16;
+                    if (this.profile.audio_blur == null) this.profile.audio_blur = 16;
                     if (this.profile.discord_border_width == null) this.profile.discord_border_width = 1;
                     if (!this.profile.bio_text_color) this.profile.bio_text_color = '#d4d4d8';
                     if (!this.profile.discord_name_color) this.profile.discord_name_color = '#ffffff';
