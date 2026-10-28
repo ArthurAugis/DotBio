@@ -1,6 +1,6 @@
 # Installation guide
 
-This guide covers a local install, the optional Discord and GeoIP integrations, and a production deployment on a Debian/Ubuntu VPS.
+This guide covers a local install, the optional Discord, sign in, email and GeoIP integrations, and a production deployment on a Debian/Ubuntu VPS.
 
 ---
 
@@ -32,8 +32,9 @@ php artisan db:seed
 
 This creates a placeholder admin user and a starter profile with sample links.
 
-> Signing in goes through Discord only, so configure the Discord integration (section 3)
-> before you need the admin area. The first Discord account to sign in takes over the profile.
+> The first account to sign in takes over the profile, through an OAuth provider (sections 3
+> and 4) or by creating an email and password account from `/login`. After that, only that
+> account and its sign in method can reach the admin area.
 
 ### 1.4 Run it
 
@@ -123,7 +124,7 @@ https://discord.com/api/oauth2/authorize?client_id=YOUR_CLIENT_ID&permissions=0&
 php artisan discord:bot
 ```
 
-It opens a WebSocket connection to the Discord gateway, mirrors presence updates into the `profiles` table and reconnects automatically. Section 5.4 covers running it as a service.
+It opens a WebSocket connection to the Discord gateway, mirrors presence updates into the `profiles` table and reconnects automatically. Section 7.4 covers running it as a service.
 
 ### 3.5 Pushing status from an external bot (alternative)
 
@@ -140,7 +141,105 @@ Set `DISCORD_STATUS_SECRET` to a random string. While it is empty the endpoint s
 
 ---
 
-## 4. GeoIP country analytics (optional)
+## 4. Other sign in providers (optional)
+
+Besides Discord and email, the admin area can be claimed with Google, GitHub, Twitch, Steam,
+Spotify or Patreon. A provider only shows on the login page once its secret is set, and once
+the profile has an owner only the owner's provider is shown.
+
+For each provider, register this callback URL (use `http://localhost:8000` locally):
+
+```
+https://your-domain.tld/auth/<provider>/callback
+```
+
+| Provider | Where to create the app | Notes |
+| --- | --- | --- |
+| Google | [Google Cloud Console](https://console.cloud.google.com/apis/credentials) → Create credentials → OAuth client ID → Web application | Configure the consent screen first. |
+| GitHub | [Settings → Developer settings → OAuth Apps](https://github.com/settings/developers) | Homepage URL is your site. |
+| Twitch | [Twitch developer console](https://dev.twitch.tv/console) → Register Your Application | Client type: Confidential. |
+| Steam | [Steam Web API key](https://steamcommunity.com/dev/apikey) | Uses OpenID and an API key, no client ID. Steam returns no email. |
+| Spotify | [Spotify developer dashboard](https://developer.spotify.com/dashboard) → Create app | In development mode, add your account under User Management. |
+| Patreon | [Patreon clients page](https://www.patreon.com/portal/registration/register-clients) → Create Client | Client API version 2. |
+
+Then fill the matching keys in `.env`:
+
+```dotenv
+GOOGLE_CLIENT_ID=
+GOOGLE_CLIENT_SECRET=
+GOOGLE_REDIRECT_URI="${APP_URL}/auth/google/callback"
+
+GITHUB_CLIENT_ID=
+GITHUB_CLIENT_SECRET=
+GITHUB_REDIRECT_URI="${APP_URL}/auth/github/callback"
+
+TWITCH_CLIENT_ID=
+TWITCH_CLIENT_SECRET=
+TWITCH_REDIRECT_URI="${APP_URL}/auth/twitch/callback"
+
+STEAM_CLIENT_SECRET=your-web-api-key
+STEAM_REDIRECT_URI="${APP_URL}/auth/steam/callback"
+
+SPOTIFY_CLIENT_ID=
+SPOTIFY_CLIENT_SECRET=
+SPOTIFY_REDIRECT_URI="${APP_URL}/auth/spotify/callback"
+
+PATREON_CLIENT_ID=
+PATREON_CLIENT_SECRET=
+PATREON_REDIRECT_URI="${APP_URL}/auth/patreon/callback"
+```
+
+Steam only accepts a return URL on the `APP_URL` host, so `APP_URL` must be set to your real domain.
+
+```bash
+php artisan config:clear
+```
+
+---
+
+## 5. Email delivery (optional)
+
+Email and password accounts need outgoing mail for the verification link and password reset.
+OAuth accounts never need it. Any SMTP service works; Resend and Brevo both have a free tier.
+
+Resend (verify your domain in Resend first, the password is an API key):
+
+```dotenv
+MAIL_MAILER=smtp
+MAIL_SCHEME=smtps
+MAIL_HOST=smtp.resend.com
+MAIL_PORT=465
+MAIL_USERNAME=resend
+MAIL_PASSWORD=re_xxxxxxxx
+MAIL_FROM_ADDRESS="no-reply@your-domain.tld"
+MAIL_FROM_NAME="DotBio"
+```
+
+Brevo (login and key under **SMTP & API**, validate the sender address first):
+
+```dotenv
+MAIL_MAILER=smtp
+MAIL_SCHEME=smtp
+MAIL_HOST=smtp-relay.brevo.com
+MAIL_PORT=587
+MAIL_USERNAME=xxxxxx@smtp-brevo.com
+MAIL_PASSWORD=xsmtpsib-xxxxxxxx
+MAIL_FROM_ADDRESS="no-reply@your-domain.tld"
+MAIL_FROM_NAME="DotBio"
+```
+
+`APP_URL` must be your public URL, or the links in the emails point to localhost. To test sending:
+
+```bash
+php artisan config:clear
+php artisan tinker --execute="Mail::raw('Test', fn (\$m) => \$m->to('you@example.com')->subject('DotBio SMTP test'));"
+```
+
+With the default `MAIL_MAILER=log`, emails are written to `storage/logs/laravel.log` instead of being sent.
+
+---
+
+## 6. GeoIP country analytics (optional)
 
 Country data is resolved locally from a MaxMind GeoLite2 database. Nothing is sent to a third party.
 
@@ -158,9 +257,9 @@ Lookups are cached for 7 days per IP address. Loopback addresses are skipped.
 
 ---
 
-## 5. Production deployment (Debian / Ubuntu VPS)
+## 7. Production deployment (Debian / Ubuntu VPS)
 
-### 5.1 Deploy the code
+### 7.1 Deploy the code
 
 ```bash
 sudo apt update
@@ -196,7 +295,7 @@ php artisan view:cache
 
 > `config:cache` makes `.env` unreadable at runtime. Every value the app needs is already read through `config()`, so this is safe - but re-run it after every `.env` change.
 
-### 5.2 Session cookies
+### 7.2 Session cookies
 
 Once the site is served over HTTPS, pin the session cookie to it:
 
@@ -208,14 +307,14 @@ SESSION_ENCRYPT=true
 
 Without `SESSION_SECURE_COOKIE`, the admin session cookie is also sent over plain HTTP.
 
-### 5.3 File permissions
+### 7.3 File permissions
 
 ```bash
 sudo chown -R www-data:www-data /var/www/dotbio/storage /var/www/dotbio/bootstrap/cache
 sudo chmod -R 775 /var/www/dotbio/storage /var/www/dotbio/bootstrap/cache
 ```
 
-### 5.4 Run the Discord bot as a service
+### 7.4 Run the Discord bot as a service
 
 Create `/etc/systemd/system/dotbio-bot.service`:
 
@@ -254,7 +353,7 @@ systemd is the default: the scheduler only starts the bot when `DOTBIO_RUN_DISCO
 Do not enable both. Clearing the cache — which every update does — drops the scheduler's
 overlap lock, so the next minute starts a second daemon alongside the one already running.
 
-### 5.5 Scheduler and queue
+### 7.5 Scheduler and queue
 
 Add the scheduler to the crontab of the `www-data` user:
 
@@ -262,7 +361,7 @@ Add the scheduler to the crontab of the `www-data` user:
 * * * * * cd /var/www/dotbio && php artisan schedule:run >> /dev/null 2>&1
 ```
 
-The scheduler only starts the presence daemon when `DOTBIO_RUN_DISCORD_BOT=true`. Leave it at `false` when systemd runs it (5.4).
+The scheduler only starts the presence daemon when `DOTBIO_RUN_DISCORD_BOT=true`. Leave it at `false` when systemd runs it (7.4).
 
 The queue is only used for background work; a single worker is enough:
 
@@ -270,7 +369,7 @@ The queue is only used for background work; a single worker is enough:
 php artisan queue:work --tries=3
 ```
 
-### 5.6 Nginx
+### 7.6 Nginx
 
 ```nginx
 server {
@@ -304,7 +403,7 @@ sudo nginx -t && sudo systemctl reload nginx
 sudo certbot --nginx -d your-domain.tld
 ```
 
-### 5.7 Upload limits
+### 7.7 Upload limits
 
 The customizer reads PHP's own limits to size its validation rules. To allow larger backgrounds and audio files, raise both values in `/etc/php/8.3/fpm/php.ini`:
 
@@ -317,7 +416,7 @@ post_max_size = 64M
 sudo systemctl restart php8.3-fpm
 ```
 
-### 5.8 One-click updates
+### 7.8 One-click updates
 
 The admin area has an **Updates** page that compares the installed commit against
 `main` on GitHub and applies new commits for you. An hourly scheduled check keeps
@@ -352,19 +451,22 @@ detects this and tells you to update manually.
 
 ---
 
-## 6. Troubleshooting
+## 8. Troubleshooting
 
 | Symptom | Cause and fix |
 | --- | --- |
 | `/` redirects to `/login` | No profile row exists. Run `php artisan db:seed`, or sign in and open the dashboard. |
 | Uploaded images return 404 | `php artisan storage:link` was not run, or the symlink was lost during deployment. |
-| Discord login fails with a redirect error | The redirect URI in the Developer Portal does not match `DISCORD_REDIRECT_URI` exactly, scheme and trailing slash included. |
+| A provider login fails with a redirect error | The callback URL registered with the provider does not match its `*_REDIRECT_URI` exactly, scheme and trailing slash included. |
+| A provider button is missing on the login page | Its `*_CLIENT_SECRET` is empty, or the profile already has an owner who signed in with another method. |
+| "This account is not allowed to manage this DotBio" | The profile already belongs to another account. Only the owner, with the method they first used, can sign in. |
+| Verification or reset emails never arrive | `MAIL_MAILER` is still `log`, or the SMTP settings are wrong. Test with the tinker command in section 5 and check `storage/logs/laravel.log`. |
 | Presence stays offline | The bot shares no server with your account, or the privileged intents are disabled. Check `journalctl -u dotbio-bot -f`. |
 | Discord reset the bot token | The daemon was reconnecting in a loop. Check `journalctl -u dotbio-bot` for close code 4014 (privileged intents disabled) or 4004 (bad token), and make sure the bot is not started by systemd and the scheduler at the same time. |
 | SSL errors from the bot on Windows | Certificate verification is relaxed only when `APP_ENV=local`. In production, install a valid CA bundle and set `curl.cainfo` in `php.ini`. |
 | Analytics show no countries | `storage/app/geoip/GeoLite2-Country.mmdb` is missing, or the visitors are on loopback addresses. |
 | Config changes have no effect | Run `php artisan config:clear`, then `php artisan config:cache` in production. |
-| Update fails on "Pulling latest code" | The checkout has local modifications, or the web user cannot write to it. Run `git status` as that user and see section 5.8. |
+| Update fails on "Pulling latest code" | The checkout has local modifications, or the web user cannot write to it. Run `git status` as that user and see section 7.8. |
 | Update fails on composer or npm | Those binaries are not in the web user's `PATH`. Run the step manually over SSH, or set `DOTBIO_SELF_UPDATE_ENABLED=false`. |
 | Update button never appears | The install is not a git checkout, self-update is disabled, or the scheduler is not running the hourly version check. |
 | Update fails on npm with `EACCES` on `/var/www/.npm` | The npm cache was created by root. Run `sudo chown -R www-data:www-data /var/www/.npm /var/www/dotbio/node_modules`, then retry. |

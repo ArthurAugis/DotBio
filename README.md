@@ -8,7 +8,7 @@ Built with Laravel 13, Tailwind CSS 4 and Alpine.js. It renders a customizable l
 
 - **Visual customizer** - a live preview editor for layout, colors, borders, glow, hover effects, fonts and per-element ordering. Everything is stored on a single `profiles` row.
 - **Live Discord presence** - a long-running gateway daemon (`php artisan discord:bot`) mirrors your real Discord status, custom status, avatar decoration and clan tag onto the page. No Lanyard or external relay required.
-- **Discord OAuth login** - sign in to the admin area with the same Discord account.
+- **Flexible sign in** - claim the admin area with Discord, Google, GitHub, Twitch, Steam, Spotify, Patreon or an email and password. Once claimed, only the owner's sign in method is offered. Email accounts get email verification and password reset.
 - **Social links** - reorderable links with per-link icon, color and hover effect, plus click tracking.
 - **Analytics** - daily views and clicks with a country breakdown resolved locally from a MaxMind GeoLite2 database. No analytics vendor, no cookies.
 - **SEO panel** - meta title, description, keywords, Open Graph image, robots directive and custom favicon.
@@ -23,7 +23,7 @@ Built with Laravel 13, Tailwind CSS 4 and Alpine.js. It renders a customizable l
 | Node.js | 20+ |
 | Database | SQLite (default), MySQL 8+ or PostgreSQL 13+ |
 
-Optional: a Discord application (for OAuth and the presence bot) and a MaxMind GeoLite2 Country database (for analytics country data). Both are optional - the app runs without them.
+Optional: OAuth applications for the sign in providers you want (Discord also powers the presence bot), an SMTP service such as Resend or Brevo (for email verification and password reset), and a MaxMind GeoLite2 Country database (for analytics country data). The app runs without them.
 
 ## Quick start
 
@@ -39,8 +39,10 @@ php artisan serve
 
 The seeder creates a starter profile with sample links.
 
-Signing in goes through Discord only, so set up the Discord integration before you need the
-admin area. See [INSTALLATION.md](INSTALLATION.md) for Discord, GeoIP and production deployment.
+Open `/login` to claim the profile: the first account to sign in becomes its owner, either
+through a configured OAuth provider or by creating an email and password account. See
+[INSTALLATION.md](INSTALLATION.md) for the sign in providers, email delivery, Discord, GeoIP
+and production deployment.
 
 ## Development
 
@@ -62,6 +64,7 @@ vendor/bin/pint  # Pint, apply fixes
 app/
 ├── Console/Commands/DiscordBotWorker.php   Discord gateway daemon
 ├── Http/Controllers/Admin/                 Dashboard, customizer, links, analytics, SEO
+├── Http/Controllers/Auth/                  OAuth, email login, registration, password reset, verification
 ├── Http/Requests/                          Form request validation
 ├── Models/                                 Profile, Link, Analytic, User
 ├── Services/DiscordApi.php                 Discord REST client
@@ -74,6 +77,7 @@ resources/views/
 ## Architecture notes
 
 - **Single tenant by design.** The public route always renders the first `Profile` row. Multi-user hosting is out of scope.
+- **One owner, one sign in method.** The first account to sign in owns the profile. After that, the login page only shows the owner's method and every other account is refused. A provider only appears on the login page once its secret is set in `.env`.
 - **The bot is a daemon, not a queue job.** `discord:bot` holds an open WebSocket connection to the Discord gateway and reconnects on failure. The scheduler re-runs it every minute with `withoutOverlapping()` so it self-heals after a crash.
 - **Uploads live on the `public` disk** and are served through `php artisan storage:link`.
 
