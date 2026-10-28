@@ -27,7 +27,7 @@
         @elseif($block->type === 'button')
             <{{ $blockTag }} {!! $blockLink !!} class="lp-block lp-group-button lp-hover-{{ $linkStyles['button']['hover_effect'] }} w-full flex items-center gap-4 px-4 py-3.5 min-h-16">
                 @if($block->image_url)
-                    <img src="{{ asset($block->image_url) }}" alt="" loading="lazy" class="w-11 h-11 rounded-xl object-cover flex-shrink-0">
+                    <img src="{{ asset($block->image_url) }}" alt="" loading="lazy" class="w-11 h-11 rounded-xl object-contain flex-shrink-0">
                 @else
                     <span class="w-11 flex-shrink-0"></span>
                 @endif
