@@ -9,7 +9,7 @@
                 backgroundColor: 'transparent'
             }"
             :title="isMuted ? 'Unmute Audio' : 'Mute Audio'">
-        <i class="fa-solid" :class="isMuted || volume === 0 ? 'fa-volume-xmark' : (volume < 0.5 ? 'fa-volume-low' : 'fa-volume-high')"></i>
+        <i class="fa-solid fa-fw" :class="isMuted || volume === 0 ? 'fa-volume-xmark' : (volume < 0.5 ? 'fa-volume-low' : 'fa-volume-high')"></i>
     </button>
     <input type="range" min="0" max="1" step="0.01" aria-label="Volume"
            x-show="hovered" x-transition.opacity
