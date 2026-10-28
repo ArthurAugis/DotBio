@@ -295,7 +295,7 @@
     </style>
 </head>
 
-<body class="h-full min-h-screen relative flex flex-col items-center justify-center p-4 overflow-x-hidden"
+<body class="min-h-screen relative flex flex-col items-center p-4 overflow-x-hidden"
       x-data="dotBioProfile({{ json_encode($profile) }})">
 
     @if($profile->audio_enabled && $profile->audio_url && ($profile->show_mute_icon ?? true))
@@ -352,7 +352,7 @@
         $linkBackArrows = ['right' => 'fa-arrow-left', 'left' => 'fa-arrow-right', 'top' => 'fa-arrow-up', 'bottom' => 'fa-arrow-down'];
     @endphp
 
-    <div class="w-full flex justify-center"
+    <div class="w-full flex justify-center my-auto py-8 sm:py-0"
          x-show="!linksOpen"
          x-transition:enter="lp-anim"
          x-transition:enter-start="lp-main-off-{{ $linkDirection }}"
