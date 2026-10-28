@@ -241,17 +241,17 @@ With the default `MAIL_MAILER=log`, emails are written to `storage/logs/laravel.
 
 ## 6. GeoIP country analytics (optional)
 
-Country data is resolved locally from a MaxMind GeoLite2 database. Nothing is sent to a third party.
+Country data is resolved locally from the free [DB-IP IP to Country Lite](https://db-ip.com/db/download/ip-to-country-lite) database. No account or key is needed, and visitor IPs are never sent to a third party.
 
-1. Create a free account at [maxmind.com](https://www.maxmind.com/en/geolite2/signup).
-2. Download **GeoLite2 Country** in the MMDB format.
-3. Place the file at:
+The scheduler installs the database within the hour if it is missing and refreshes it every month. This needs the `schedule:run` cron entry from the production section. To install it right away:
 
-```
-storage/app/geoip/GeoLite2-Country.mmdb
+```bash
+php artisan geoip:update
 ```
 
-The file is gitignored on purpose - MaxMind's license does not allow redistribution. Without it, views are still recorded but no country breakdown appears.
+The database is stored at `storage/app/geoip/country.mmdb` and is gitignored. Without it, views are still recorded but no country breakdown appears. A MaxMind `GeoLite2-Country.mmdb` placed in the same folder is still used when `country.mmdb` is absent.
+
+The DB-IP Lite data is licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/), which is why the analytics page credits DB-IP.
 
 Lookups are cached for 7 days per IP address. Loopback addresses are skipped.
 
@@ -464,7 +464,7 @@ detects this and tells you to update manually.
 | Presence stays offline | The bot shares no server with your account, or the privileged intents are disabled. Check `journalctl -u dotbio-bot -f`. |
 | Discord reset the bot token | The daemon was reconnecting in a loop. Check `journalctl -u dotbio-bot` for close code 4014 (privileged intents disabled) or 4004 (bad token), and make sure the bot is not started by systemd and the scheduler at the same time. |
 | SSL errors from the bot on Windows | Certificate verification is relaxed only when `APP_ENV=local`. In production, install a valid CA bundle and set `curl.cainfo` in `php.ini`. |
-| Analytics show no countries | `storage/app/geoip/GeoLite2-Country.mmdb` is missing, or the visitors are on loopback addresses. |
+| Analytics show no countries | `storage/app/geoip/country.mmdb` is missing (run `php artisan geoip:update`, and check the scheduler cron), or the visitors are on loopback addresses. |
 | Config changes have no effect | Run `php artisan config:clear`, then `php artisan config:cache` in production. |
 | Update fails on "Pulling latest code" | The checkout has local modifications, or the web user cannot write to it. Run `git status` as that user and see section 7.8. |
 | Update fails on composer or npm | Those binaries are not in the web user's `PATH`. Run the step manually over SSH, or set `DOTBIO_SELF_UPDATE_ENABLED=false`. |

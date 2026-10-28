@@ -212,7 +212,10 @@
         </div>
 
             <x-admin.card class="p-6 space-y-6">
-    <h2 class="text-sm font-semibold text-zinc-200">Top Countries with Most Views: {{ $periodLabel }}</h2>
+    <div class="flex flex-wrap items-baseline justify-between gap-2">
+        <h2 class="text-sm font-semibold text-zinc-200">Top Countries with Most Views: {{ $periodLabel }}</h2>
+        <a href="https://db-ip.com" target="_blank" rel="noopener noreferrer" class="text-[10px] text-zinc-500 hover:text-zinc-300">IP Geolocation by DB-IP</a>
+    </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-center">
         <div class="space-y-3 max-h-[280px] overflow-y-auto pr-1">

@@ -195,9 +195,10 @@ class ProfileController extends Controller
 
     private function lookupCountryCode(string $ipAddress): ?string
     {
-        $databasePath = storage_path('app/geoip/GeoLite2-Country.mmdb');
+        $databasePath = collect([storage_path('app/geoip/country.mmdb'), storage_path('app/geoip/GeoLite2-Country.mmdb')])
+            ->first(fn (string $path): bool => file_exists($path));
 
-        if (! file_exists($databasePath)) {
+        if ($databasePath === null) {
             return null;
         }
 

@@ -10,7 +10,7 @@ Built with Laravel 13, Tailwind CSS 4 and Alpine.js. It renders a customizable l
 - **Live Discord presence** - a long-running gateway daemon (`php artisan discord:bot`) mirrors your real Discord status, custom status, avatar decoration and clan tag onto the page. No Lanyard or external relay required.
 - **Flexible sign in** - claim the admin area with Discord, Google, GitHub, Twitch, Steam, Spotify, Patreon or an email and password. Once claimed, only the owner's sign in method is offered. Email accounts get email verification and password reset.
 - **Social links** - reorderable links with per-link icon, color and hover effect, plus click tracking.
-- **Analytics** - daily views and clicks with a country breakdown resolved locally from a MaxMind GeoLite2 database. No analytics vendor, no cookies.
+- **Analytics** - daily views and clicks with a country breakdown resolved locally from the free DB-IP country database, downloaded and refreshed automatically. No analytics vendor, no cookies.
 - **SEO panel** - meta title, description, keywords, Open Graph image, robots directive and custom favicon.
 - **Audio player** - optional background track with cover art, styled to match the profile.
 
@@ -23,7 +23,7 @@ Built with Laravel 13, Tailwind CSS 4 and Alpine.js. It renders a customizable l
 | Node.js | 20+ |
 | Database | SQLite (default), MySQL 8+ or PostgreSQL 13+ |
 
-Optional: OAuth applications for the sign in providers you want (Discord also powers the presence bot), an SMTP service such as Resend or Brevo (for email verification and password reset), and a MaxMind GeoLite2 Country database (for analytics country data). The app runs without them.
+Optional: OAuth applications for the sign in providers you want (Discord also powers the presence bot), an SMTP service such as Resend or Brevo (for email verification and password reset). The app runs without them.
 
 ## Quick start
 
