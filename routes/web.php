@@ -10,6 +10,7 @@ use App\Http\Controllers\Admin\LinkPageController;
 use App\Http\Controllers\Admin\SeoController;
 use App\Http\Controllers\Admin\UpdateController;
 use App\Http\Controllers\Api\DiscordStatusController;
+use App\Http\Controllers\Auth\EmailVerificationController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\OAuthController;
 use App\Http\Controllers\Auth\PasswordResetController;
@@ -50,7 +51,17 @@ Route::get('/auth/{provider}', [OAuthController::class, 'redirect'])
 Route::get('/auth/{provider}/callback', [OAuthController::class, 'callback'])
     ->whereIn('provider', OAuthController::PROVIDERS);
 
-Route::middleware('auth')->prefix('admin')->name('admin.')->group(function (): void {
+Route::middleware('auth')->group(function (): void {
+    Route::get('/email/verify', [EmailVerificationController::class, 'notice'])->name('verification.notice');
+    Route::get('/email/verify/{id}/{hash}', [EmailVerificationController::class, 'verify'])
+        ->middleware('signed')
+        ->name('verification.verify');
+    Route::post('/email/verification-notification', [EmailVerificationController::class, 'send'])
+        ->middleware('throttle:6,1')
+        ->name('verification.send');
+});
+
+Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(function (): void {
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/analytics', [AnalyticsController::class, 'index'])->name('analytics');
 

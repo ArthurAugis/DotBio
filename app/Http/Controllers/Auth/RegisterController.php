@@ -41,6 +41,8 @@ class RegisterController extends Controller
         $profile->avatar_url = $this->storePublicFile($request, 'avatar_file', 'uploads/avatars') ?? $profile->avatar_url;
         $profile->save();
 
+        $user->sendEmailVerificationNotification();
+
         Auth::login($user, true);
         $request->session()->regenerate();
 

@@ -41,7 +41,7 @@ test('a user registers with email, username and avatar', function (): void {
 
     Storage::disk('public')->assertExists(str_replace('/storage/', '', $profile->avatar_url));
 
-    $this->get('/admin')->assertSuccessful();
+    $this->get('/admin')->assertRedirect(route('verification.notice'));
 });
 
 test('the username must be unique', function (): void {
