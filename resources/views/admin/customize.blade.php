@@ -287,7 +287,7 @@
                                     <span class="element-badge-label">Display Name</span>
                                     <h1 contenteditable="true"
                                         @blur="profile.display_name = $el.innerText"
-                                        class="font-bold tracking-tight text-3xl focus:outline-none cursor-text" 
+                                        class="font-bold tracking-tight text-3xl focus:outline-none cursor-text whitespace-pre-line"
                                         :style="{ color: profile.text_color || '#ffffff' }" 
                                         x-text="profile.display_name || '{{ auth()->user()->name }}'"></h1>
                                 </div>
@@ -567,6 +567,10 @@
             <input type="hidden" name="audio_border_width" :value="profile.audio_border_width">
             <input type="hidden" name="audio_opacity" :value="profile.audio_opacity">
             <input type="hidden" name="audio_glow" :value="profile.audio_glow ? '1' : ''">
+            <input type="hidden" name="avatar_glow" :value="profile.avatar_glow ? '1' : ''">
+            <input type="hidden" name="glow_username" :value="profile.glow_username ? '1' : ''">
+            <input type="hidden" name="glow_socials" :value="profile.glow_socials ? '1' : ''">
+            <input type="hidden" name="show_discord_decoration" :value="profile.show_discord_decoration ? '1' : ''">
             <input type="hidden" name="discord_border_color" :value="profile.discord_border_color">
             <input type="hidden" name="discord_border_width" :value="profile.discord_border_width">
             <input type="hidden" name="discord_opacity" :value="profile.discord_opacity">

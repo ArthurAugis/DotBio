@@ -1,7 +1,8 @@
 <div class="space-y-4">
     <div class="space-y-1">
         <label class="text-zinc-400 font-semibold">Display Name Text</label>
-        <input type="text" x-model="profile.display_name" placeholder="Your Display Name" class="w-full bg-[#09080d] border border-white/10 rounded-xl p-2 text-xs text-white focus:outline-none">
+        <textarea x-model="profile.display_name" rows="2" placeholder="Your Display Name" class="w-full bg-[#09080d] border border-white/10 rounded-xl p-2 text-xs text-white focus:outline-none resize-none"></textarea>
+        <p class="text-[10px] text-zinc-500">Press Enter to put the rest of the name on a second line.</p>
     </div>
 
     <x-admin.color-picker model="profile.text_color" label="Username Text Color" />

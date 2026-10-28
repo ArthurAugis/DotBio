@@ -409,19 +409,19 @@
                             @endif
                         </div>
                     @elseif($el === 'display_name' && $profile->show_display_name)
-                        <div class="space-y-1">
+                        <div class="space-y-1 text-center">
                             <h1 class="font-bold tracking-tight text-3xl {{ $profile->glow_username ? 'username-glow' : '' }} {{ $profile->username_effect === 'sparkle' ? 'sparkle-text' : '' }} {{ $profile->username_effect === 'rainbow' ? 'rainbow-text' : '' }}"
                                 style="color: {{ $profile->text_color ?? '#ffffff' }};">
                                 @if($profile->typewriter_enabled && !empty($profile->display_name_typewriter_words))
                                     <span x-text="nameTypewriterText"></span><span class="animate-pulse">|</span>
                                 @else
-                                    {{ $profile->display_name ?? (auth()->user()->name ?? 'User') }}
+                                    <span class="whitespace-pre-line">{{ $profile->display_name ?? (auth()->user()->name ?? 'User') }}</span>
                                 @endif
                             </h1>
-                            @if($profile->show_discord_tag && ($profile->discord_tag || (auth()->check() && auth()->user()->name)))
+                            @if($profile->show_discord_tag && $profile->discord_tag)
                                 <p class="text-xs text-indigo-300/80 font-mono font-medium flex items-center justify-center gap-1">
                                     <i class="fa-brands fa-discord text-[11px]"></i>
-                                    <span>{{ $profile->discord_tag ?: ('@' . (auth()->user()->name ?? 'user')) }}</span>
+                                    <span>{{ $profile->discord_tag }}</span>
                                 </p>
                             @endif
                         </div>
