@@ -69,6 +69,7 @@
                 'github' => ['GitHub', 'bg-zinc-800 hover:bg-zinc-700 text-white'],
                 'twitch' => ['Twitch', 'bg-[#9146FF] hover:bg-[#772CE8] text-white'],
                 'steam' => ['Steam', 'bg-[#171a21] hover:bg-[#2a475e] text-white border border-zinc-800'],
+                'spotify' => ['Spotify', 'bg-[#1DB954] hover:bg-[#1ed760] text-black'],
             ];
         @endphp
 

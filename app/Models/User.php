@@ -22,6 +22,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'github_id',
         'twitch_id',
         'steam_id',
+        'spotify_id',
         'avatar',
         'username',
         'password',
@@ -48,6 +49,7 @@ class User extends Authenticatable implements MustVerifyEmail
             $this->github_id !== null => 'github',
             $this->twitch_id !== null => 'twitch',
             $this->steam_id !== null => 'steam',
+            $this->spotify_id !== null => 'spotify',
             $this->password !== null => 'password',
             default => null,
         };

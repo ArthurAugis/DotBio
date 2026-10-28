@@ -17,7 +17,7 @@ use Throwable;
 
 class OAuthController extends Controller
 {
-    public const PROVIDERS = ['discord', 'google', 'github', 'twitch', 'steam'];
+    public const PROVIDERS = ['discord', 'google', 'github', 'twitch', 'steam', 'spotify'];
 
     /**
      * @return list<string>

@@ -29,6 +29,7 @@
         <env name="GITHUB_CLIENT_SECRET" value="testing"/>
         <env name="TWITCH_CLIENT_SECRET" value="testing"/>
         <env name="STEAM_CLIENT_SECRET" value="testing"/>
+        <env name="SPOTIFY_CLIENT_SECRET" value="testing"/>
         <env name="QUEUE_CONNECTION" value="sync"/>
         <env name="SESSION_DRIVER" value="array"/>
     </php>

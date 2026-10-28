@@ -74,7 +74,17 @@ test('the first user creates the profile with the provider avatar', function (st
         ->assertSee(route('auth.redirect', $provider))
         ->assertDontSee(route('auth.redirect', 'discord'))
         ->assertDontSee(route('login.store'));
-})->with(['google', 'github', 'twitch', 'steam']);
+})->with(['google', 'github', 'twitch', 'steam', 'spotify']);
+
+test('a spotify account without nickname uses its display name', function (): void {
+    fakeOAuthUser('spotify', '666', ['nickname' => null, 'name' => 'Yoshi']);
+
+    $this->get('/auth/spotify/callback')->assertRedirect(route('admin.dashboard'));
+
+    $user = User::where('spotify_id', '666')->firstOrFail();
+    expect($user->username)->toBe('Yoshi')
+        ->and($user->profile->display_name)->toBe('Yoshi');
+});
 
 test('a steam account without email gets a fallback email', function (): void {
     fakeOAuthUser('steam', '76561198000000000', ['email' => null, 'name' => null, 'nickname' => 'yoshi']);

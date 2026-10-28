@@ -59,4 +59,10 @@ return [
         'force_https' => str_starts_with((string) env('APP_URL'), 'https://'),
     ],
 
+    'spotify' => [
+        'client_id' => env('SPOTIFY_CLIENT_ID'),
+        'client_secret' => env('SPOTIFY_CLIENT_SECRET'),
+        'redirect' => env('SPOTIFY_REDIRECT_URI', 'http://localhost:8000/auth/spotify/callback'),
+    ],
+
 ];
