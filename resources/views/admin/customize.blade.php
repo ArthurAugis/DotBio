@@ -784,6 +784,11 @@
                 contextMenu: { show: false, x: 0, y: 0, target: '' },
                 inspector: { show: false, x: 0, y: 0, target: '' },
 
+                normalizeSelectionColors() {
+                    const saved = this.profile.selection_colors && !Array.isArray(this.profile.selection_colors) ? this.profile.selection_colors : {};
+                    this.profile.selection_colors = Object.fromEntries(['display_name', 'bio', 'location'].map((target) => [target, { bg: '', text: '', ...(saved[target] || {}) }]));
+                },
+
                 init() {
                     if (!this.profile.hover_zoom_scale) this.profile.hover_zoom_scale = 1.08;
                     if (!this.profile.hover_glow_color) this.profile.hover_glow_color = '#8b5cf6';
@@ -795,8 +800,7 @@
                     if (!this.profile.bio_font_size) this.profile.bio_font_size = 14;
                     if (!this.profile.bio_align) this.profile.bio_align = 'center';
                     if (!this.profile.typewriter_speed) this.profile.typewriter_speed = 90;
-                    const selectionColors = this.profile.selection_colors && !Array.isArray(this.profile.selection_colors) ? this.profile.selection_colors : {};
-                    this.profile.selection_colors = Object.fromEntries(['display_name', 'bio', 'location'].map((target) => [target, { bg: '', text: '', ...(selectionColors[target] || {}) }]));
+                    this.normalizeSelectionColors();
                     if (this.profile.avatar_size == null) this.profile.avatar_size = 96;
                     if (this.profile.avatar_radius == null) this.profile.avatar_radius = 100;
                     if (this.profile.card_width == null) this.profile.card_width = 420;
@@ -941,6 +945,7 @@
 
                             if (data.profile) {
                                 Object.assign(this.profile, data.profile);
+                                this.normalizeSelectionColors();
                             }
                         } else {
                             let msg = (data && data.message) ? data.message : ('Server error (' + response.status + ')');
