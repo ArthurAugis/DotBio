@@ -119,7 +119,7 @@ class UpdateCustomizationRequest extends FormRequest
             'secondary_avatar_file' => ['nullable', 'file', 'mimes:jpeg,png,jpg,gif,webp', 'max:10240'],
             'enter_image' => ['nullable', 'file', 'mimes:jpeg,png,jpg,gif,webp', 'max:10240'],
             'custom_cursor_file' => ['nullable', 'file', 'mimes:png,gif,cur,ico,jpeg,jpg,webp', 'max:10240'],
-            'custom_font_file' => ['nullable', 'file', 'mimes:ttf,otf,woff,woff2', 'max:10240'],
+            'custom_font_file' => ['nullable', 'file', 'extensions:ttf,otf,woff,woff2', 'max:10240'],
             'discord_banner_file' => ['nullable', 'file', 'mimes:jpeg,png,jpg,gif,webp', 'max:10240'],
             'discord_profile_effect_file' => ['nullable', 'file', 'mimes:jpeg,png,jpg,gif,webp,apng', 'max:10240'],
             'discord_avatar_decoration_file' => ['nullable', 'file', 'mimes:jpeg,png,jpg,gif,webp,apng', 'max:10240'],

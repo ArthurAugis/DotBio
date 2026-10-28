@@ -71,7 +71,7 @@ class CustomizeController extends Controller
         $validated = $request->validated();
 
         foreach (self::FILE_UPLOADS as $field => [$column, $directory]) {
-            $newUrl = $this->storePublicFile($request, $field, $directory);
+            $newUrl = $this->storePublicFile($request, $field, $directory, $field === 'custom_font_file');
 
             if (! $newUrl) {
                 continue;

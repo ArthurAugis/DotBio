@@ -6,16 +6,23 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 abstract class Controller
 {
-    protected function storePublicFile(Request $request, string $field, string $directory): ?string
+    protected function storePublicFile(Request $request, string $field, string $directory, bool $keepClientExtension = false): ?string
     {
         if (! $request->hasFile($field)) {
             return null;
         }
 
-        return Storage::url($request->file($field)->store($directory, 'public'));
+        $file = $request->file($field);
+
+        if ($keepClientExtension) {
+            return Storage::url($file->storeAs($directory, Str::random(40).'.'.strtolower($file->getClientOriginalExtension()), 'public'));
+        }
+
+        return Storage::url($file->store($directory, 'public'));
     }
 
     protected function deleteOldPublicFile(?string $oldUrl): void
