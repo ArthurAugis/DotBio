@@ -19,9 +19,11 @@ class User extends Authenticatable
         'discord_id',
         'avatar',
         'username',
+        'password',
     ];
 
     protected $hidden = [
+        'password',
         'remember_token',
     ];
 
@@ -29,6 +31,7 @@ class User extends Authenticatable
     {
         return [
             'email_verified_at' => 'datetime',
+            'password' => 'hashed',
         ];
     }
 

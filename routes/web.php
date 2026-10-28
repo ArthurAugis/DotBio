@@ -12,6 +12,7 @@ use App\Http\Controllers\Admin\UpdateController;
 use App\Http\Controllers\Api\DiscordStatusController;
 use App\Http\Controllers\Auth\DiscordController;
 use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
@@ -31,7 +32,11 @@ Route::post('/api/discord/update-status', [DiscordStatusController::class, 'upda
     ->name('api.discord.update_status');
 
 Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
+Route::post('/login', [LoginController::class, 'login'])->middleware('throttle:5,1')->name('login.store');
 Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
+
+Route::get('/register', [RegisterController::class, 'create'])->name('register');
+Route::post('/register', [RegisterController::class, 'store'])->middleware('throttle:5,1')->name('register.store');
 
 Route::get('/auth/discord', [DiscordController::class, 'redirect'])->name('auth.discord');
 Route::get('/auth/discord/callback', [DiscordController::class, 'callback']);

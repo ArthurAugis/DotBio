@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\LoginRequest;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -19,6 +20,19 @@ class LoginController extends Controller
         }
 
         return view('auth.login');
+    }
+
+    public function login(LoginRequest $request): RedirectResponse
+    {
+        if (! Auth::attempt($request->validated(), $request->boolean('remember'))) {
+            return back()
+                ->withInput($request->only('email'))
+                ->withErrors(['email' => 'These credentials do not match our records.']);
+        }
+
+        $request->session()->regenerate();
+
+        return redirect()->intended(route('admin.dashboard'));
     }
 
     public function logout(Request $request): RedirectResponse

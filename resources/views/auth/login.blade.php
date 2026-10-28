@@ -17,7 +17,7 @@
     <div class="w-full max-w-sm bg-[#121215] border border-zinc-800/80 rounded-2xl p-7 text-center space-y-6">
         <div class="space-y-1.5">
             <h1 class="text-2xl font-bold tracking-tight text-white">DotBio</h1>
-            <p class="text-xs text-zinc-400">Sign in with your Discord account</p>
+            <p class="text-xs text-zinc-400">Sign in to manage your page</p>
         </div>
 
         @if ($errors->any())
@@ -28,15 +28,40 @@
             </div>
         @endif
 
+        <form method="POST" action="{{ route('login.store') }}" class="space-y-3 text-left">
+            @csrf
+            <input type="email" name="email" value="{{ old('email') }}" placeholder="Email" required autocomplete="email"
+                   class="w-full px-4 py-3 bg-[#09090b] border border-zinc-800 rounded-xl text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-zinc-600">
+            <input type="password" name="password" placeholder="Password" required autocomplete="current-password"
+                   class="w-full px-4 py-3 bg-[#09090b] border border-zinc-800 rounded-xl text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-zinc-600">
+            <label class="flex items-center gap-2 text-xs text-zinc-400">
+                <input type="checkbox" name="remember" value="1" class="accent-zinc-400">
+                Remember me
+            </label>
+            <button type="submit" class="w-full py-3 px-4 bg-white hover:bg-zinc-200 text-black font-medium rounded-xl text-sm transition">
+                Log in
+            </button>
+        </form>
+
+        <div class="flex items-center gap-3 text-xs text-zinc-500">
+            <span class="flex-1 h-px bg-zinc-800"></span>
+            or
+            <span class="flex-1 h-px bg-zinc-800"></span>
+        </div>
+
         <div>
-            <a href="{{ route('auth.discord') }}" 
+            <a href="{{ route('auth.discord') }}"
                class="w-full py-3 px-4 bg-[#5865F2] hover:bg-[#4752C4] text-white font-medium rounded-xl text-sm transition flex items-center justify-center gap-2.5">
                 <i class="fa-brands fa-discord text-lg"></i>
                 <span>Log in with Discord</span>
             </a>
         </div>
 
-        @if(\App\Models\Profile::exists())
+        @if(! \App\Models\Profile::exists())
+        <p class="text-xs text-zinc-500">
+            No account yet? <a href="{{ route('register') }}" class="text-zinc-300 hover:text-white transition">Create your DotBio</a>
+        </p>
+        @else
         <div class="pt-2">
             <a href="/" class="text-xs text-zinc-500 hover:text-zinc-300 transition">
                 ← Back to public profile
