@@ -51,4 +51,12 @@ return [
         'redirect' => env('TWITCH_REDIRECT_URI', 'http://localhost:8000/auth/twitch/callback'),
     ],
 
+    'steam' => [
+        'client_id' => null,
+        'client_secret' => env('STEAM_CLIENT_SECRET'),
+        'redirect' => env('STEAM_REDIRECT_URI', 'http://localhost:8000/auth/steam/callback'),
+        'allowed_hosts' => array_filter([parse_url((string) env('APP_URL'), PHP_URL_HOST)]),
+        'force_https' => str_starts_with((string) env('APP_URL'), 'https://'),
+    ],
+
 ];

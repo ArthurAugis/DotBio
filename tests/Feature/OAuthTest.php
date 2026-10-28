@@ -74,7 +74,18 @@ test('the first user creates the profile with the provider avatar', function (st
         ->assertSee(route('auth.redirect', $provider))
         ->assertDontSee(route('auth.redirect', 'discord'))
         ->assertDontSee(route('login.store'));
-})->with(['google', 'github', 'twitch']);
+})->with(['google', 'github', 'twitch', 'steam']);
+
+test('a steam account without email gets a fallback email', function (): void {
+    fakeOAuthUser('steam', '76561198000000000', ['email' => null, 'name' => null, 'nickname' => 'yoshi']);
+
+    $this->get('/auth/steam/callback')->assertRedirect(route('admin.dashboard'));
+
+    $user = User::where('steam_id', '76561198000000000')->firstOrFail();
+    expect($user->email)->toBe('76561198000000000@steam.user')
+        ->and($user->name)->toBe('yoshi')
+        ->and($user->hasVerifiedEmail())->toBeTrue();
+});
 
 test('only configured providers are shown on the login page', function (): void {
     config(['services.twitch.client_secret' => null]);
