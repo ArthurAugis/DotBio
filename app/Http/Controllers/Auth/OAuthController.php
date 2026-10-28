@@ -17,7 +17,7 @@ use Throwable;
 
 class OAuthController extends Controller
 {
-    public const PROVIDERS = ['discord', 'google'];
+    public const PROVIDERS = ['discord', 'google', 'github'];
 
     public function redirect(string $provider): RedirectResponse
     {

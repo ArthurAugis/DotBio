@@ -57,6 +57,7 @@
             @foreach([
                 'discord' => ['Discord', 'bg-[#5865F2] hover:bg-[#4752C4] text-white'],
                 'google' => ['Google', 'bg-white hover:bg-zinc-200 text-black'],
+                'github' => ['GitHub', 'bg-zinc-800 hover:bg-zinc-700 text-white'],
             ] as $provider => [$label, $classes])
                 @if(in_array($loginMethod, [null, $provider], true))
                 <a href="{{ route('auth.redirect', $provider) }}"

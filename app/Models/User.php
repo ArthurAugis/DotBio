@@ -18,6 +18,7 @@ class User extends Authenticatable
         'email',
         'discord_id',
         'google_id',
+        'github_id',
         'avatar',
         'username',
         'password',
@@ -41,6 +42,7 @@ class User extends Authenticatable
         return match (true) {
             $this->discord_id !== null => 'discord',
             $this->google_id !== null => 'google',
+            $this->github_id !== null => 'github',
             $this->password !== null => 'password',
             default => null,
         };

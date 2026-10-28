@@ -74,7 +74,18 @@ test('the first user creates the profile with the provider avatar', function (st
         ->assertSee(route('auth.redirect', $provider))
         ->assertDontSee(route('auth.redirect', 'discord'))
         ->assertDontSee(route('login.store'));
-})->with(['google']);
+})->with(['google', 'github']);
+
+test('a github account is refused when the owner signed up with google', function (): void {
+    $user = User::factory()->create(['password' => null, 'google_id' => '333']);
+    Profile::factory()->create(['user_id' => $user->id]);
+    fakeOAuthUser('github', '333');
+
+    $this->get('/auth/github/callback')->assertRedirect(route('login'));
+
+    $this->assertGuest();
+    $this->assertDatabaseMissing('users', ['github_id' => '333']);
+});
 
 test('another provider is refused when the owner signed up with google', function (): void {
     $user = User::factory()->create(['password' => null, 'google_id' => '333']);
@@ -112,5 +123,5 @@ test('a taken username does not block the sign in', function (): void {
 });
 
 test('unknown providers are not routed', function (): void {
-    $this->get('/auth/github')->assertNotFound();
+    $this->get('/auth/twitter')->assertNotFound();
 });
