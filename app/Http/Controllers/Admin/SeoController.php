@@ -39,6 +39,6 @@ class SeoController extends Controller
 
     private function profile(): Profile
     {
-        return Profile::firstOrCreate(['user_id' => auth()->id()]);
+        return Profile::first() ?? Profile::create(['user_id' => auth()->id()]);
     }
 }

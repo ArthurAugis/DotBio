@@ -34,6 +34,14 @@
             </div>
         @endif
 
+        @if($errors->any())
+            <div class="bg-rose-500/10 border border-rose-500/30 text-rose-400 px-4 py-3 rounded-2xl text-xs font-semibold space-y-1">
+                @foreach($errors->all() as $error)
+                    <p>{{ $error }}</p>
+                @endforeach
+            </div>
+        @endif
+
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
             <div class="lg:col-span-7 space-y-6">
                 <form action="{{ route('admin.seo.update') }}" method="POST" enctype="multipart/form-data" class="space-y-6">
