@@ -20,6 +20,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'discord_id',
         'google_id',
         'github_id',
+        'twitch_id',
         'avatar',
         'username',
         'password',
@@ -44,6 +45,7 @@ class User extends Authenticatable implements MustVerifyEmail
             $this->discord_id !== null => 'discord',
             $this->google_id !== null => 'google',
             $this->github_id !== null => 'github',
+            $this->twitch_id !== null => 'twitch',
             $this->password !== null => 'password',
             default => null,
         };

@@ -17,7 +17,18 @@ use Throwable;
 
 class OAuthController extends Controller
 {
-    public const PROVIDERS = ['discord', 'google', 'github'];
+    public const PROVIDERS = ['discord', 'google', 'github', 'twitch'];
+
+    /**
+     * @return list<string>
+     */
+    public static function configuredProviders(): array
+    {
+        return array_values(array_filter(
+            self::PROVIDERS,
+            fn (string $provider): bool => filled(config("services.{$provider}.client_secret")),
+        ));
+    }
 
     public function redirect(string $provider): RedirectResponse
     {

@@ -20,8 +20,14 @@ class LoginController extends Controller
             return redirect()->route('admin.dashboard');
         }
 
+        $loginMethod = Profile::ownerLoginMethod();
+
         return view('auth.login', [
-            'loginMethod' => Profile::ownerLoginMethod(),
+            'loginMethod' => $loginMethod,
+            'oauthProviders' => array_values(array_filter(
+                OAuthController::configuredProviders(),
+                fn (string $provider): bool => in_array($loginMethod, [null, $provider], true),
+            )),
             'hasProfile' => Profile::exists(),
         ]);
     }

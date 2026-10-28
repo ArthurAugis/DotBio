@@ -54,7 +54,7 @@
         </form>
         @endif
 
-        @if($loginMethod === null)
+        @if($loginMethod === null && $oauthProviders)
         <div class="flex items-center gap-3 text-xs text-zinc-500">
             <span class="flex-1 h-px bg-zinc-800"></span>
             or
@@ -62,21 +62,33 @@
         </div>
         @endif
 
-        <div class="space-y-2.5">
-            @foreach([
+        @php
+            $providerStyles = [
                 'discord' => ['Discord', 'bg-[#5865F2] hover:bg-[#4752C4] text-white'],
                 'google' => ['Google', 'bg-white hover:bg-zinc-200 text-black'],
                 'github' => ['GitHub', 'bg-zinc-800 hover:bg-zinc-700 text-white'],
-            ] as $provider => [$label, $classes])
-                @if(in_array($loginMethod, [null, $provider], true))
-                <a href="{{ route('auth.redirect', $provider) }}"
-                   class="w-full py-3 px-4 {{ $classes }} font-medium rounded-xl text-sm transition flex items-center justify-center gap-2.5">
-                    <i class="fa-brands fa-{{ $provider }} text-lg"></i>
-                    <span>Log in with {{ $label }}</span>
-                </a>
-                @endif
-            @endforeach
-        </div>
+                'twitch' => ['Twitch', 'bg-[#9146FF] hover:bg-[#772CE8] text-white'],
+            ];
+        @endphp
+
+        @if(count($oauthProviders) === 1)
+            @php([$label, $classes] = $providerStyles[$oauthProviders[0]])
+            <a href="{{ route('auth.redirect', $oauthProviders[0]) }}"
+               class="w-full py-3 px-4 {{ $classes }} font-medium rounded-xl text-sm transition flex items-center justify-center gap-2.5">
+                <i class="fa-brands fa-{{ $oauthProviders[0] }} text-lg"></i>
+                <span>Log in with {{ $label }}</span>
+            </a>
+        @elseif($oauthProviders)
+            <div class="grid grid-cols-4 gap-2">
+                @foreach($oauthProviders as $provider)
+                    @php([$label, $classes] = $providerStyles[$provider])
+                    <a href="{{ route('auth.redirect', $provider) }}" title="Log in with {{ $label }}" aria-label="Log in with {{ $label }}"
+                       class="py-3 {{ $classes }} rounded-xl transition flex items-center justify-center">
+                        <i class="fa-brands fa-{{ $provider }} text-lg"></i>
+                    </a>
+                @endforeach
+            </div>
+        @endif
 
         @if($loginMethod === null)
         <p class="text-xs text-zinc-500">

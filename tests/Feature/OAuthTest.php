@@ -74,7 +74,16 @@ test('the first user creates the profile with the provider avatar', function (st
         ->assertSee(route('auth.redirect', $provider))
         ->assertDontSee(route('auth.redirect', 'discord'))
         ->assertDontSee(route('login.store'));
-})->with(['google', 'github']);
+})->with(['google', 'github', 'twitch']);
+
+test('only configured providers are shown on the login page', function (): void {
+    config(['services.twitch.client_secret' => null]);
+
+    $this->get('/login')
+        ->assertSee(route('auth.redirect', 'discord'))
+        ->assertSee(route('auth.redirect', 'github'))
+        ->assertDontSee(route('auth.redirect', 'twitch'));
+});
 
 test('a github account is refused when the owner signed up with google', function (): void {
     $user = User::factory()->create(['password' => null, 'google_id' => '333']);
