@@ -311,6 +311,11 @@ class Profile extends Model
         return $this->belongsTo(User::class);
     }
 
+    public static function ownerLoginMethod(): ?string
+    {
+        return static::with('user')->first()?->user?->loginMethod();
+    }
+
     public function links(): HasMany
     {
         return $this->hasMany(Link::class)->orderBy('sort_order');

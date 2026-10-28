@@ -16,7 +16,7 @@ class RegisterController extends Controller
 {
     public function create(): View|RedirectResponse
     {
-        if (Profile::exists()) {
+        if (Profile::ownerLoginMethod() !== null) {
             return redirect()->route('login');
         }
 
@@ -32,11 +32,14 @@ class RegisterController extends Controller
             'password' => $request->validated('password'),
         ]);
 
-        Profile::create([
+        $profile = Profile::first() ?? new Profile;
+        $profile->fill([
             'user_id' => $user->id,
             'display_name' => $user->username,
-            'avatar_url' => $this->storePublicFile($request, 'avatar_file', 'uploads/avatars'),
+            'use_discord_avatar' => false,
         ]);
+        $profile->avatar_url = $this->storePublicFile($request, 'avatar_file', 'uploads/avatars') ?? $profile->avatar_url;
+        $profile->save();
 
         Auth::login($user, true);
         $request->session()->regenerate();

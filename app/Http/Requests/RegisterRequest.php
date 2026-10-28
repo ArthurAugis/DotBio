@@ -12,7 +12,7 @@ class RegisterRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return ! Profile::exists();
+        return Profile::ownerLoginMethod() === null;
     }
 
     public function rules(): array

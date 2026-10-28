@@ -35,6 +35,15 @@ class User extends Authenticatable
         ];
     }
 
+    public function loginMethod(): ?string
+    {
+        return match (true) {
+            $this->discord_id !== null => 'discord',
+            $this->password !== null => 'password',
+            default => null,
+        };
+    }
+
     public function profile(): HasOne
     {
         return $this->hasOne(Profile::class);

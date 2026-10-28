@@ -28,6 +28,7 @@
             </div>
         @endif
 
+        @if($loginMethod !== 'discord')
         <form method="POST" action="{{ route('login.store') }}" class="space-y-3 text-left">
             @csrf
             <input type="email" name="email" value="{{ old('email') }}" placeholder="Email" required autocomplete="email"
@@ -42,13 +43,17 @@
                 Log in
             </button>
         </form>
+        @endif
 
+        @if($loginMethod === null)
         <div class="flex items-center gap-3 text-xs text-zinc-500">
             <span class="flex-1 h-px bg-zinc-800"></span>
             or
             <span class="flex-1 h-px bg-zinc-800"></span>
         </div>
+        @endif
 
+        @if($loginMethod !== 'password')
         <div>
             <a href="{{ route('auth.discord') }}"
                class="w-full py-3 px-4 bg-[#5865F2] hover:bg-[#4752C4] text-white font-medium rounded-xl text-sm transition flex items-center justify-center gap-2.5">
@@ -56,12 +61,15 @@
                 <span>Log in with Discord</span>
             </a>
         </div>
+        @endif
 
-        @if(! \App\Models\Profile::exists())
+        @if($loginMethod === null)
         <p class="text-xs text-zinc-500">
             No account yet? <a href="{{ route('register') }}" class="text-zinc-300 hover:text-white transition">Create your DotBio</a>
         </p>
-        @else
+        @endif
+
+        @if($hasProfile)
         <div class="pt-2">
             <a href="/" class="text-xs text-zinc-500 hover:text-zinc-300 transition">
                 ← Back to public profile

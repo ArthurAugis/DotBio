@@ -34,7 +34,10 @@ class DiscordController extends Controller
                 ->withErrors(['email' => 'Discord authentication failed. Please try again.']);
         }
 
-        if (Profile::exists() && ! User::where('discord_id', $discordUser->getId())->exists()) {
+        $page = Profile::with('user')->first();
+        $owner = $page?->user;
+
+        if ($owner?->loginMethod() !== null && $owner->discord_id !== $discordUser->getId()) {
             return redirect()
                 ->route('login')
                 ->withErrors(['email' => 'This Discord account is not allowed to manage this DotBio.']);
@@ -50,15 +53,12 @@ class DiscordController extends Controller
             ],
         );
 
-        $profile = Profile::firstOrCreate(
-            ['user_id' => $user->id],
-            [
-                'display_name' => $discordUser->getNickname() ?? $discordUser->getName() ?? $user->name,
-                'discord_id' => $discordUser->getId(),
-            ],
-        );
+        $profile = $page ?? Profile::create([
+            'display_name' => $discordUser->getNickname() ?? $discordUser->getName() ?? $user->name,
+        ]);
 
         $profile->update([
+            'user_id' => $user->id,
             'discord_id' => $discordUser->getId(),
             'avatar_url' => $discordUser->getAvatar() ?: $profile->avatar_url,
             'use_discord_avatar' => true,
