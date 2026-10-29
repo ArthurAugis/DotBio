@@ -4,24 +4,6 @@ declare(strict_types=1);
 
 use App\Models\Profile;
 use App\Models\User;
-use Laravel\Socialite\Contracts\Provider;
-use Laravel\Socialite\Facades\Socialite;
-use Laravel\Socialite\Two\User as SocialiteUser;
-
-function fakeOAuthUser(string $provider, string $id, array $attributes = []): void
-{
-    $account = (new SocialiteUser)->map($attributes + [
-        'id' => $id,
-        'nickname' => 'user'.$id,
-        'name' => 'User '.$id,
-        'email' => $id.'@example.com',
-        'avatar' => 'https://avatars.example.com/'.$id.'.png',
-    ]);
-
-    $driver = Mockery::mock(Provider::class);
-    $driver->shouldReceive('user')->andReturn($account);
-    Socialite::shouldReceive('driver')->with($provider)->andReturn($driver);
-}
 
 test('the first discord user creates the profile', function (): void {
     fakeOAuthUser('discord', '111');
@@ -72,8 +54,7 @@ test('the first user creates the profile with the provider avatar', function (st
     $this->post('/logout');
     $this->get('/login')
         ->assertSee(route('auth.redirect', $provider))
-        ->assertDontSee(route('auth.redirect', 'discord'))
-        ->assertDontSee(route('login.store'));
+        ->assertDontSee(route('register'));
 })->with(['google', 'github', 'twitch', 'steam', 'spotify', 'patreon']);
 
 test('the login page shows every configured provider in the grid', function (): void {

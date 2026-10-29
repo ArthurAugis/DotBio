@@ -6,31 +6,22 @@ use App\Models\Link;
 use App\Models\Profile;
 use App\Models\User;
 
-test('the login page only offers discord when the owner signed up with discord', function (): void {
+test('the login page offers every method but no sign up once the page is claimed', function (): void {
     Profile::factory()->for(User::factory()->state(['password' => null, 'discord_id' => '111']))->create();
 
     $this->get('/login')
         ->assertSuccessful()
         ->assertSee(route('auth.redirect', 'discord'))
-        ->assertDontSee(route('login.store'))
-        ->assertDontSee(route('register'));
-});
-
-test('the login page only offers email when the owner signed up with a password', function (): void {
-    Profile::factory()->create();
-
-    $this->get('/login')
-        ->assertSuccessful()
+        ->assertSee(route('auth.redirect', 'google'))
         ->assertSee(route('login.store'))
-        ->assertDontSee(route('auth.redirect', 'discord'))
         ->assertDontSee(route('register'));
 });
 
-test('email login is refused when the owner uses discord', function (): void {
-    Profile::factory()->for(User::factory()->state(['password' => null, 'discord_id' => '111']))->create();
-    $other = User::factory()->create();
+test('a wrong password is refused', function (): void {
+    $owner = User::factory()->create();
+    Profile::factory()->create(['user_id' => $owner->id]);
 
-    $this->post('/login', ['email' => $other->email, 'password' => 'password'])
+    $this->post('/login', ['email' => $owner->email, 'password' => 'wrong-password'])
         ->assertSessionHasErrors('email');
 
     $this->assertGuest();

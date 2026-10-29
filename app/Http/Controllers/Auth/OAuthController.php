@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\Invitation;
 use App\Models\Profile;
 use App\Models\User;
 use GuzzleHttp\Client;
@@ -50,13 +51,7 @@ class OAuthController extends Controller
         $column = $provider.'_id';
         $accountId = (string) $account->getId();
         $page = Profile::with('user')->first();
-        $owner = $page?->user;
-
-        if ($owner?->loginMethod() !== null && $owner->{$column} !== $accountId) {
-            return redirect()
-                ->route('login')
-                ->withErrors(['email' => 'This account is not allowed to manage this DotBio.']);
-        }
+        $claimed = $page?->user?->loginMethod() !== null;
 
         $nickname = $account->getNickname() ?? $account->getName();
         $email = $account->getEmail() ?? $accountId.'@'.$provider.'.user';
@@ -64,6 +59,13 @@ class OAuthController extends Controller
         $user = User::where($column, $accountId)->first()
             ?? User::where('email', $email)->first()
             ?? new User;
+        $invitation = Invitation::pendingFor($email);
+
+        if ($claimed && $user->loginMethod() === null && $invitation === null) {
+            return redirect()
+                ->route('login')
+                ->withErrors(['email' => 'This account is not allowed to manage this DotBio.']);
+        }
 
         $usernameTaken = User::where('username', $nickname)->where('id', '!=', $user->id ?? 0)->exists();
 
@@ -75,18 +77,22 @@ class OAuthController extends Controller
             'username' => $usernameTaken ? $user->username : $nickname,
         ])->save();
 
-        $profile = $page ?? Profile::create(['display_name' => $nickname ?? $user->name]);
+        $invitation?->delete();
 
-        $profile->update(['user_id' => $user->id] + ($provider === 'discord'
-            ? [
-                'discord_id' => $accountId,
-                'avatar_url' => $account->getAvatar() ?: $profile->avatar_url,
-                'use_discord_avatar' => true,
-            ]
-            : [
-                'avatar_url' => $profile->avatar_url ?: $account->getAvatar(),
-                'use_discord_avatar' => false,
-            ]));
+        if (! $claimed || $page->user_id === $user->id) {
+            $profile = $page ?? Profile::create(['display_name' => $nickname ?? $user->name]);
+
+            $profile->update(['user_id' => $user->id] + ($provider === 'discord'
+                ? [
+                    'discord_id' => $accountId,
+                    'avatar_url' => $account->getAvatar() ?: $profile->avatar_url,
+                    'use_discord_avatar' => true,
+                ]
+                : [
+                    'avatar_url' => $profile->avatar_url ?: $account->getAvatar(),
+                    'use_discord_avatar' => false,
+                ]));
+        }
 
         Auth::login($user, true);
 

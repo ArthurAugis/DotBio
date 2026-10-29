@@ -6,6 +6,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\RegisterRequest;
+use App\Models\Invitation;
 use App\Models\Profile;
 use App\Models\User;
 use Illuminate\Contracts\View\View;
@@ -16,15 +17,19 @@ class RegisterController extends Controller
 {
     public function create(): View|RedirectResponse
     {
-        if (Profile::ownerLoginMethod() !== null) {
+        $invited = Profile::ownerLoginMethod() !== null;
+
+        if ($invited && ! Invitation::exists()) {
             return redirect()->route('login');
         }
 
-        return view('auth.register');
+        return view('auth.register', ['invited' => $invited]);
     }
 
     public function store(RegisterRequest $request): RedirectResponse
     {
+        $claimed = Profile::ownerLoginMethod() !== null;
+
         $user = User::create([
             'name' => $request->validated('username'),
             'username' => $request->validated('username'),
@@ -32,14 +37,18 @@ class RegisterController extends Controller
             'password' => $request->validated('password'),
         ]);
 
-        $profile = Profile::first() ?? new Profile;
-        $profile->fill([
-            'user_id' => $user->id,
-            'display_name' => $user->username,
-            'use_discord_avatar' => false,
-        ]);
-        $profile->avatar_url = $this->storePublicFile($request, 'avatar_file', 'uploads/avatars') ?? $profile->avatar_url;
-        $profile->save();
+        if ($claimed) {
+            Invitation::pendingFor($user->email)?->delete();
+        } else {
+            $profile = Profile::first() ?? new Profile;
+            $profile->fill([
+                'user_id' => $user->id,
+                'display_name' => $user->username,
+                'use_discord_avatar' => false,
+            ]);
+            $profile->avatar_url = $this->storePublicFile($request, 'avatar_file', 'uploads/avatars') ?? $profile->avatar_url;
+            $profile->save();
+        }
 
         $user->sendEmailVerificationNotification();
 

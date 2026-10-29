@@ -34,7 +34,6 @@
             </div>
         @endif
 
-        @if(in_array($loginMethod, [null, 'password'], true))
         <form method="POST" action="{{ route('login.store') }}" class="space-y-3 text-left">
             @csrf
             <input type="email" name="email" value="{{ old('email') }}" placeholder="Email" required autocomplete="email"
@@ -52,9 +51,8 @@
                 Log in
             </button>
         </form>
-        @endif
 
-        @if($loginMethod === null && $oauthProviders)
+        @if($oauthProviders)
         <div class="flex items-center gap-3 text-xs text-zinc-500">
             <span class="flex-1 h-px bg-zinc-800"></span>
             or
@@ -93,9 +91,13 @@
             </div>
         @endif
 
-        @if($loginMethod === null)
+        @if(! $claimed)
         <p class="text-xs text-zinc-500">
             No account yet? <a href="{{ route('register') }}" class="text-zinc-300 hover:text-white transition">Create your DotBio</a>
+        </p>
+        @elseif($hasInvitations)
+        <p class="text-xs text-zinc-500">
+            Invited? Log in with an account using the invited email, or <a href="{{ route('register') }}" class="text-zinc-300 hover:text-white transition">create one with a password</a>
         </p>
         @endif
 

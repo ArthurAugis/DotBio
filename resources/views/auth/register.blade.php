@@ -17,7 +17,7 @@
     <div class="w-full max-w-sm bg-[#121215] border border-zinc-800/80 rounded-2xl p-7 text-center space-y-6">
         <div class="space-y-1.5">
             <h1 class="text-2xl font-bold tracking-tight text-white">DotBio</h1>
-            <p class="text-xs text-zinc-400">Create your page with an email and password</p>
+            <p class="text-xs text-zinc-400">{{ $invited ? 'Create your admin account with the email you were invited with' : 'Create your page with an email and password' }}</p>
         </div>
 
         @if ($errors->any())
@@ -31,6 +31,7 @@
         <form method="POST" action="{{ route('register.store') }}" enctype="multipart/form-data" class="space-y-3 text-left"
               x-data="{ preview: null }">
             @csrf
+            @unless($invited)
             <label class="flex items-center gap-3 cursor-pointer">
                 <span class="w-14 h-14 rounded-full bg-[#09090b] border border-zinc-800 overflow-hidden flex items-center justify-center text-[10px] text-zinc-500 shrink-0">
                     <img x-show="preview" :src="preview" alt="" class="w-full h-full object-cover">
@@ -40,6 +41,7 @@
                 <input type="file" name="avatar_file" accept="image/jpeg,image/png,image/gif,image/webp" class="hidden"
                        @change="preview = $event.target.files[0] ? URL.createObjectURL($event.target.files[0]) : null">
             </label>
+            @endunless
             <input type="text" name="username" value="{{ old('username') }}" placeholder="Username" required autocomplete="username"
                    class="w-full px-4 py-3 bg-[#09090b] border border-zinc-800 rounded-xl text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-zinc-600">
             <input type="email" name="email" value="{{ old('email') }}" placeholder="Email" required autocomplete="email"
@@ -49,7 +51,7 @@
             <input type="password" name="password_confirmation" placeholder="Confirm password" required autocomplete="new-password"
                    class="w-full px-4 py-3 bg-[#09090b] border border-zinc-800 rounded-xl text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-zinc-600">
             <button type="submit" class="w-full py-3 px-4 bg-white hover:bg-zinc-200 text-black font-medium rounded-xl text-sm transition">
-                Create my DotBio
+                {{ $invited ? 'Create my account' : 'Create my DotBio' }}
             </button>
         </form>
 

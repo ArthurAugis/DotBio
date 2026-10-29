@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Requests;
 
+use App\Models\Invitation;
 use App\Models\Profile;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rules\Password;
@@ -12,7 +13,7 @@ class RegisterRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return Profile::ownerLoginMethod() === null;
+        return Profile::ownerLoginMethod() === null || Invitation::pendingFor($this->string('email')->value()) !== null;
     }
 
     public function rules(): array
