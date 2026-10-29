@@ -58,6 +58,13 @@
                 <span>SEO & Favicon</span>
             </a>
 
+            @can('owner')
+            <a href="{{ route('admin.team') }}"
+               class="w-full flex items-center px-3 py-2.5 rounded-xl transition text-left cursor-pointer {{ request()->routeIs('admin.team') ? 'bg-[#1e1b26] text-purple-300 font-semibold' : 'text-zinc-400 hover:text-zinc-200 hover:bg-white/5' }}">
+                <i class="fa-solid fa-user-group text-base" style="margin-right: 12px; display: inline-block;"></i>
+                <span>Team</span>
+            </a>
+
             <a href="{{ route('admin.update') }}"
                class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl transition text-left cursor-pointer {{ request()->routeIs('admin.update') ? 'bg-[#1e1b26] text-purple-300 font-semibold' : 'text-zinc-400 hover:text-zinc-200 hover:bg-white/5' }}">
                 <span class="flex items-center">
@@ -68,6 +75,7 @@
                     <span class="w-2 h-2 rounded-full bg-purple-400 shrink-0"></span>
                 @endif
             </a>
+            @endcan
         </nav>
     </div>
 
@@ -185,6 +193,13 @@
                     <span>SEO & Favicon</span>
                 </a>
 
+                @can('owner')
+                <a href="{{ route('admin.team') }}"
+                   class="w-full flex items-center px-4 py-3 rounded-2xl transition text-left cursor-pointer {{ request()->routeIs('admin.team') ? 'bg-[#1e1b26] text-purple-300 font-semibold' : 'text-zinc-400 hover:text-zinc-200 hover:bg-white/5' }}">
+                    <i class="fa-solid fa-user-group text-lg text-purple-400" style="margin-right: 16px; display: inline-block;"></i>
+                    <span>Team</span>
+                </a>
+
                 <a href="{{ route('admin.update') }}"
                    class="w-full flex items-center justify-between px-4 py-3 rounded-2xl transition text-left cursor-pointer {{ request()->routeIs('admin.update') ? 'bg-[#1e1b26] text-purple-300 font-semibold' : 'text-zinc-300 hover:text-white hover:bg-white/5' }}">
                     <span class="flex items-center">
@@ -195,6 +210,7 @@
                         <span class="w-2 h-2 rounded-full bg-purple-400 shrink-0"></span>
                     @endif
                 </a>
+                @endcan
             </nav>
         </div>
 

@@ -8,6 +8,7 @@ use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\LinkController;
 use App\Http\Controllers\Admin\LinkPageController;
 use App\Http\Controllers\Admin\SeoController;
+use App\Http\Controllers\Admin\TeamController;
 use App\Http\Controllers\Admin\UpdateController;
 use App\Http\Controllers\Api\DiscordStatusController;
 use App\Http\Controllers\Auth\EmailVerificationController;
@@ -85,9 +86,17 @@ Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(
     Route::patch('/link-page/blocks/{block}/toggle', [LinkPageController::class, 'toggle'])->name('link-page.toggle');
     Route::delete('/link-page/blocks/{block}', [LinkPageController::class, 'destroy'])->name('link-page.destroy');
 
-    Route::get('/update', [UpdateController::class, 'index'])->name('update');
-    Route::get('/update/status', [UpdateController::class, 'status'])->name('update.status');
-    Route::post('/update/check', [UpdateController::class, 'check'])->name('update.check');
-    Route::post('/update/run', [UpdateController::class, 'run'])->name('update.run');
-    Route::post('/update/rollback', [UpdateController::class, 'rollback'])->name('update.rollback');
+    Route::middleware('can:owner')->group(function (): void {
+        Route::get('/team', [TeamController::class, 'index'])->name('team');
+        Route::post('/team/invitations', [TeamController::class, 'invite'])->name('team.invite');
+        Route::delete('/team/invitations/{invitation}', [TeamController::class, 'revoke'])->name('team.revoke');
+        Route::delete('/team/admins/{user}', [TeamController::class, 'remove'])->name('team.remove');
+        Route::post('/team/admins/{user}/transfer', [TeamController::class, 'transfer'])->name('team.transfer');
+
+        Route::get('/update', [UpdateController::class, 'index'])->name('update');
+        Route::get('/update/status', [UpdateController::class, 'status'])->name('update.status');
+        Route::post('/update/check', [UpdateController::class, 'check'])->name('update.check');
+        Route::post('/update/run', [UpdateController::class, 'run'])->name('update.run');
+        Route::post('/update/rollback', [UpdateController::class, 'rollback'])->name('update.rollback');
+    });
 });

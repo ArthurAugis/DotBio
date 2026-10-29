@@ -269,6 +269,7 @@ class Profile extends Model
     protected function casts(): array
     {
         return [
+            'user_id' => 'integer',
             'last_seen_at' => 'datetime',
 
             'element_order' => 'array',
@@ -323,6 +324,16 @@ class Profile extends Model
         return static::with('user')->first()?->user?->loginMethod();
     }
 
+    public function transferTo(User $user): void
+    {
+        $this->update([
+            'user_id' => $user->id,
+            'discord_id' => $user->discord_id,
+            'avatar_url' => $user->avatar ?: $this->avatar_url,
+            'use_discord_avatar' => $user->loginMethod() === 'discord',
+        ]);
+    }
+
     public function links(): HasMany
     {
         return $this->hasMany(Link::class)->orderBy('sort_order');
@@ -336,7 +347,7 @@ class Profile extends Model
     protected function avatarSource(): Attribute
     {
         return Attribute::get(function (): string {
-            $authenticatedAvatar = auth()->user()?->avatar;
+            $authenticatedAvatar = auth()->id() === $this->user_id ? auth()->user()->avatar : null;
 
             if ($this->use_discord_avatar && $authenticatedAvatar) {
                 return $authenticatedAvatar;
