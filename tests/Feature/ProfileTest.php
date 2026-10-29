@@ -109,3 +109,38 @@ test('the mute button shows even when the audio player is hidden', function (): 
         ->assertSee('toggleMute()', false)
         ->assertDontSee('x-show="profile.show_audio_player"', false);
 });
+
+test('the enter screen only shows when background music plays', function (bool $audioEnabled, bool $shown): void {
+    Profile::factory()->create([
+        'audio_enabled' => $audioEnabled,
+        'audio_url' => 'uploads/audio/song.mp3',
+        'background_url' => 'uploads/backgrounds/bg.png',
+    ]);
+
+    $response = $this->get('/')->assertSuccessful();
+
+    $shown ? $response->assertSee('@click="enterSite()"', false) : $response->assertDontSee('@click="enterSite()"', false);
+})->with([
+    'music on' => [true, true],
+    'music off' => [false, false],
+]);
+
+test('background music can be turned off and is turned back on by a new upload', function (): void {
+    Storage::fake('public');
+    $profile = Profile::factory()->create(['audio_enabled' => true, 'audio_url' => 'uploads/audio/song.mp3']);
+
+    $this->actingAs($profile->user)
+        ->post('/admin/customize', ['audio_enabled' => ''], ['Accept' => 'application/json'])
+        ->assertSuccessful();
+
+    expect($profile->fresh()->audio_enabled)->toBeFalse();
+
+    $this->actingAs($profile->user)
+        ->post('/admin/customize', [
+            'audio_enabled' => '',
+            'audio_file' => UploadedFile::fake()->create('song.mp3', 100, 'audio/mpeg'),
+        ], ['Accept' => 'application/json'])
+        ->assertSuccessful();
+
+    expect($profile->fresh()->audio_enabled)->toBeTrue();
+});

@@ -1,5 +1,9 @@
 <div class="space-y-3">
     <div class="flex items-center justify-between p-2.5 bg-black/40 rounded-xl border border-white/5">
+        <span class="text-xs font-semibold text-zinc-300">Play Background Music</span>
+        <input type="checkbox" x-model="profile.audio_enabled" class="accent-purple-500 w-4 h-4 cursor-pointer">
+    </div>
+    <div class="flex items-center justify-between p-2.5 bg-black/40 rounded-xl border border-white/5">
         <span class="text-xs font-semibold text-zinc-300">Show Audio Player Widget</span>
         <input type="checkbox" x-model="profile.show_audio_player" class="accent-purple-500 w-4 h-4 cursor-pointer">
     </div>

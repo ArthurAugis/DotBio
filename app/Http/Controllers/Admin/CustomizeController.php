@@ -40,6 +40,7 @@ class CustomizeController extends Controller
         'show_bio',
         'show_lanyard_card',
         'show_social_links',
+        'audio_enabled',
         'show_audio_player',
         'show_mute_icon',
         'show_discord_tag',
@@ -113,8 +114,8 @@ class CustomizeController extends Controller
         ));
 
         $profile->update(array_merge(
-            $validated,
             $this->booleanFieldValues($request, $submittedBooleans),
+            $validated,
         ));
 
         return response()->json([

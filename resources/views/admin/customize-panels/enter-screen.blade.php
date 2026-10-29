@@ -1,4 +1,10 @@
 <div class="space-y-4">
+    <div class="flex items-center justify-between p-2.5 bg-black/40 rounded-xl border border-white/5">
+        <span class="text-xs font-semibold text-zinc-300">Play Background Music</span>
+        <input type="checkbox" x-model="profile.audio_enabled" class="accent-purple-500 w-4 h-4 cursor-pointer">
+    </div>
+    <p class="text-[10px] text-zinc-400">The enter screen only appears when background music is playing.</p>
+
     <div class="space-y-1">
         <label class="text-zinc-400 font-semibold">Click to Enter Text</label>
         <input type="text" x-model="profile.enter_text" placeholder="Click anywhere to enter" class="w-full bg-[#09080d] border border-white/10 rounded-xl p-2 text-xs text-white focus:outline-none">

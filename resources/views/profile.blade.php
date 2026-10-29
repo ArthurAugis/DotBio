@@ -317,7 +317,7 @@
     </div>
     @endif
 
-    @if(($profile->audio_enabled && $profile->audio_url) || !empty($profile->background_url) || !empty($profile->background_portrait_url))
+    @if($profile->audio_enabled && $profile->audio_url)
     <div x-show="!entered" 
          @click="enterSite()"
          class="fixed inset-0 z-50 flex flex-col items-center justify-center cursor-pointer select-none gap-4 p-6 text-center"
@@ -652,7 +652,7 @@
         document.addEventListener('alpine:init', () => {
             Alpine.data('dotBioProfile', (profileData) => ({
                 profile: profileData,
-                entered: {{ (($profile->audio_enabled && $profile->audio_url) || !empty($profile->background_url) || !empty($profile->background_portrait_url)) ? 'false' : 'true' }},
+                entered: {{ ($profile->audio_enabled && $profile->audio_url) ? 'false' : 'true' }},
                 isPlaying: false,
                 isMuted: false,
                 volume: 1,
@@ -813,15 +813,6 @@
                     const mins = Math.floor(seconds / 60);
                     const secs = Math.floor(seconds % 60);
                     return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
-                },
-
-                enterSite() {
-                    this.entered = true;
-                    const audio = document.getElementById('bg-audio');
-                    if (audio) {
-                        audio.muted = this.isMuted;
-                        audio.play().then(() => { this.isPlaying = true; }).catch(() => {});
-                    }
                 },
 
                 toggleAudio() {

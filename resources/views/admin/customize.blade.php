@@ -601,6 +601,7 @@
             <input type="hidden" name="show_bio" :value="profile.show_bio ? '1' : ''">
             <input type="hidden" name="show_lanyard_card" :value="profile.show_lanyard_card ? '1' : ''">
             <input type="hidden" name="show_social_links" :value="profile.show_social_links ? '1' : ''">
+            <input type="hidden" name="audio_enabled" :value="profile.audio_enabled ? '1' : ''">
             <input type="hidden" name="show_audio_player" :value="profile.show_audio_player ? '1' : ''">
             <input type="hidden" name="show_mute_icon" :value="profile.show_mute_icon ? '1' : ''">
             <input type="hidden" name="show_discord_tag" :value="profile.show_discord_tag ? '1' : ''">
