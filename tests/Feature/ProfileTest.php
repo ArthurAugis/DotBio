@@ -20,6 +20,29 @@ test('an otf custom font is accepted and keeps its extension', function (): void
     expect($profile->fresh()->custom_font_url)->toEndWith('.otf');
 });
 
+test('a portrait background is stored with its own type', function (): void {
+    Storage::fake('public');
+    $profile = Profile::factory()->create();
+
+    $this->actingAs($profile->user)
+        ->post('/admin/customize', ['background_portrait_file' => UploadedFile::fake()->image('phone.png', 1080, 1920)], ['Accept' => 'application/json'])
+        ->assertSuccessful();
+
+    expect($profile->fresh())
+        ->background_portrait_type->toBe('image')
+        ->background_portrait_url->toContain('uploads/backgrounds/');
+});
+
+test('the landscape and portrait backgrounds fall back to each other', function (): void {
+    $profile = Profile::factory()->create(['background_url' => 'uploads/backgrounds/wide.png', 'background_type' => 'image']);
+
+    $this->get('/')->assertSee('class="bg-layer-both', false)->assertSee('wide.png', false)->assertDontSee('class="bg-layer-portrait', false);
+
+    $profile->update(['background_portrait_url' => 'uploads/backgrounds/tall.mp4', 'background_portrait_type' => 'video']);
+
+    $this->get('/')->assertSee('class="bg-layer-landscape', false)->assertSee('class="bg-layer-portrait', false)->assertSee('tall.mp4', false);
+});
+
 test('per-element selection colors keep only valid hex colors', function (): void {
     $profile = Profile::factory()->create();
     $colors = ['display_name' => ['bg' => '#ff00aa', 'text' => '#fff'], 'bio' => ['bg' => 'red;} body{display:none', 'text' => '']];

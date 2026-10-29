@@ -116,6 +116,7 @@ class UpdateCustomizationRequest extends FormRequest
             'views_icon_color' => ['nullable', 'string', 'max:20'],
 
             'background_file' => ['nullable', 'file', 'mimes:jpeg,png,jpg,gif,mp4,webm', 'max:'.$maxKilobytes],
+            'background_portrait_file' => ['nullable', 'file', 'mimes:jpeg,png,jpg,gif,mp4,webm', 'max:'.$maxKilobytes],
             'banner_file' => ['nullable', 'file', 'mimes:jpeg,png,jpg,gif', 'max:'.$maxKilobytes],
             'audio_file' => ['nullable', 'file', 'mimes:mp3,wav,ogg,m4a,flac,aiff,aac', 'max:'.$maxKilobytes],
             'audio_cover_file' => ['nullable', 'file', 'mimes:jpeg,png,jpg,gif,webp', 'max:'.$maxKilobytes],

@@ -616,6 +616,7 @@
             <input type="file" id="secondaryAvatarFileInput" name="secondary_avatar_file" @change="submitSaveForm()">
             <input type="file" id="enterImageFileInput" name="enter_image" @change="submitSaveForm()">
             <input type="file" id="bgFileInput" name="background_file" @change="submitSaveForm()">
+            <input type="file" id="bgPortraitFileInput" name="background_portrait_file" @change="submitSaveForm()">
 
             <input type="file" id="bannerFileInput" name="banner_file" @change="submitSaveForm()">
             <input type="file" id="discordBannerFileInput" name="discord_banner_file" @change="submitSaveForm()">
@@ -658,6 +659,20 @@
                     >
                         <template x-if="profile.background_url">
                             <p class="text-[10px] text-emerald-400 font-mono">✓ Active Background Uploaded</p>
+                        </template>
+                    </x-profile.upload-card>
+
+                    <x-profile.upload-card
+                        icon="fa-solid fa-mobile-screen"
+                        title="Portrait Background (Phones)"
+                        :description="'Shown on screens taller than wide. Falls back to the main background when empty, and the other way around. MP4, WEBM, PNG, JPG (Max ' . $maxUploadSizeMB . 'MB).'"
+                        button-text="Choose Video / Image"
+                        button-action="document.getElementById('bgPortraitFileInput').click()"
+                        title-class="text-sky-400"
+                        button-class="bg-sky-600/20 hover:bg-sky-600/30 text-sky-300 border-sky-500/30"
+                    >
+                        <template x-if="profile.background_portrait_url">
+                            <p class="text-[10px] text-emerald-400 font-mono">✓ Portrait Background Uploaded</p>
                         </template>
                     </x-profile.upload-card>
 

@@ -251,6 +251,12 @@
             border: 1px solid rgba(255, 255, 255, 0.05);
         }
 
+        .bg-layer-portrait { display: none; }
+        @media (orientation: portrait) {
+            .bg-layer-portrait { display: block; }
+            .bg-layer-landscape { display: none; }
+        }
+
         .lp-anim { transition: transform 0.7s cubic-bezier(0.77, 0, 0.18, 1), opacity 0.7s ease, filter 0.7s ease; }
         .lp-on { transform: none; opacity: 1; filter: none; }
 
@@ -311,7 +317,7 @@
     </div>
     @endif
 
-    @if(($profile->audio_enabled && $profile->audio_url) || !empty($profile->background_url))
+    @if(($profile->audio_enabled && $profile->audio_url) || !empty($profile->background_url) || !empty($profile->background_portrait_url))
     <div x-show="!entered" 
          @click="enterSite()"
          class="fixed inset-0 z-50 flex flex-col items-center justify-center cursor-pointer select-none gap-4 p-6 text-center"
@@ -327,15 +333,28 @@
     @endif
 
     <div class="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
-        @if($profile->background_type === 'video' && $profile->background_url)
-            <video id="bg-video" autoplay loop muted playsinline class="w-full h-full object-cover">
-                <source src="{{ asset($profile->background_url) }}" type="video/mp4">
-            </video>
-        @elseif($profile->background_type === 'image' && $profile->background_url)
-            <div class="w-full h-full bg-cover bg-center" style="background-image: url('{{ asset($profile->background_url) }}');"></div>
-        @else
+        @php
+            $backgrounds = array_filter([
+                'landscape' => $profile->background_url ? [$profile->background_url, $profile->background_type] : null,
+                'portrait' => $profile->background_portrait_url ? [$profile->background_portrait_url, $profile->background_portrait_type] : null,
+            ]);
+            if (count($backgrounds) === 1) {
+                $backgrounds = ['both' => reset($backgrounds)];
+            }
+        @endphp
+        @forelse($backgrounds as $orientation => [$backgroundUrl, $backgroundType])
+            <div class="bg-layer-{{ $orientation }} w-full h-full">
+                @if($backgroundType === 'video')
+                    <video autoplay loop muted playsinline class="bg-video w-full h-full object-cover">
+                        <source src="{{ asset($backgroundUrl) }}" type="video/mp4">
+                    </video>
+                @else
+                    <div class="w-full h-full bg-cover bg-center" style="background-image: url('{{ asset($backgroundUrl) }}');"></div>
+                @endif
+            </div>
+        @empty
             <div class="w-full h-full" style="background: radial-gradient(circle at center, #1a1625 0%, #080808 100%);"></div>
-        @endif
+        @endforelse
 
         <div class="absolute inset-0 bg-black/60"></div>
     </div>
@@ -633,7 +652,7 @@
         document.addEventListener('alpine:init', () => {
             Alpine.data('dotBioProfile', (profileData) => ({
                 profile: profileData,
-                entered: {{ (($profile->audio_enabled && $profile->audio_url) || !empty($profile->background_url)) ? 'false' : 'true' }},
+                entered: {{ (($profile->audio_enabled && $profile->audio_url) || !empty($profile->background_url) || !empty($profile->background_portrait_url)) ? 'false' : 'true' }},
                 isPlaying: false,
                 isMuted: false,
                 volume: 1,
@@ -727,10 +746,7 @@
                 enterSite() {
                     this.entered = true;
 
-                    const video = document.getElementById('bg-video');
-                    if (video) {
-                        video.play().catch(() => {});
-                    }
+                    document.querySelectorAll('.bg-video').forEach((video) => video.play().catch(() => {}));
 
                     const audio = document.getElementById('bg-audio');
                     if (audio) {

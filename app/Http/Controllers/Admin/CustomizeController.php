@@ -18,6 +18,7 @@ class CustomizeController extends Controller
      */
     private const FILE_UPLOADS = [
         'background_file' => ['background_url', 'uploads/backgrounds'],
+        'background_portrait_file' => ['background_portrait_url', 'uploads/backgrounds'],
         'banner_file' => ['banner_url', 'uploads/banners'],
         'discord_banner_file' => ['discord_banner_url', 'uploads/discord_banners'],
         'discord_profile_effect_file' => ['discord_profile_effect_url', 'uploads/discord_effects'],
@@ -84,9 +85,9 @@ class CustomizeController extends Controller
                 $validated['audio_enabled'] = true;
             }
 
-            if ($field === 'background_file') {
+            if ($field === 'background_file' || $field === 'background_portrait_file') {
                 $mimeType = (string) $request->file($field)?->getMimeType();
-                $validated['background_type'] = str_starts_with($mimeType, 'video/') ? 'video' : 'image';
+                $validated[str_replace('_url', '_type', $column)] = str_starts_with($mimeType, 'video/') ? 'video' : 'image';
             }
         }
 

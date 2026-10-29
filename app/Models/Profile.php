@@ -118,6 +118,8 @@ class Profile extends Model
 
         'background_type',
         'background_url',
+        'background_portrait_type',
+        'background_portrait_url',
         'background_color',
         'background_blur',
 
