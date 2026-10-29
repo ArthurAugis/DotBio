@@ -12,6 +12,8 @@ if (config('dotbio.run_discord_bot_from_scheduler')) {
         ->runInBackground();
 }
 
+Schedule::command('avatars:refresh')->hourly()->withoutOverlapping();
+
 Schedule::command('geoip:update --if-missing')->hourly()->withoutOverlapping();
 Schedule::command('geoip:update')->monthlyOn(3)->withoutOverlapping();
 

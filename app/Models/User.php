@@ -27,11 +27,13 @@ class User extends Authenticatable implements MustVerifyEmail
         'avatar',
         'username',
         'password',
+        'oauth_tokens',
     ];
 
     protected $hidden = [
         'password',
         'remember_token',
+        'oauth_tokens',
     ];
 
     protected function casts(): array
@@ -39,6 +41,7 @@ class User extends Authenticatable implements MustVerifyEmail
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'oauth_tokens' => 'encrypted:array',
         ];
     }
 

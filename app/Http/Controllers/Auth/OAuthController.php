@@ -8,6 +8,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Invitation;
 use App\Models\Profile;
 use App\Models\User;
+use App\Services\ProviderAvatars;
 use GuzzleHttp\Client;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
@@ -33,7 +34,13 @@ class OAuthController extends Controller
 
     public function redirect(string $provider): RedirectResponse
     {
-        return $this->driver($provider)->redirect();
+        $driver = $this->driver($provider);
+
+        if ($provider === 'google') {
+            $driver->with(['access_type' => 'offline', 'prompt' => 'consent']);
+        }
+
+        return $driver->redirect();
     }
 
     public function callback(string $provider): RedirectResponse
@@ -68,6 +75,7 @@ class OAuthController extends Controller
         }
 
         $usernameTaken = User::where('username', $nickname)->where('id', '!=', $user->id ?? 0)->exists();
+        $previousAvatar = $user->avatar;
 
         $user->fill([
             $column => $accountId,
@@ -75,7 +83,13 @@ class OAuthController extends Controller
             'email' => $email,
             'avatar' => $account->getAvatar(),
             'username' => $usernameTaken ? $user->username : $nickname,
-        ])->save();
+        ]);
+
+        if (in_array($provider, ProviderAvatars::TOKEN_PROVIDERS, true) && $refreshToken = $account->refreshToken ?? null) {
+            $user->oauth_tokens = [$provider => $refreshToken] + ($user->oauth_tokens ?? []);
+        }
+
+        $user->save();
 
         $invitation?->delete();
 
@@ -89,7 +103,9 @@ class OAuthController extends Controller
                     'use_discord_avatar' => true,
                 ]
                 : [
-                    'avatar_url' => $profile->avatar_url ?: $account->getAvatar(),
+                    'avatar_url' => in_array($profile->avatar_url, [null, '', $previousAvatar], true)
+                        ? ($account->getAvatar() ?: $profile->avatar_url)
+                        : $profile->avatar_url,
                     'use_discord_avatar' => false,
                 ]));
         }
