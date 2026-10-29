@@ -226,3 +226,14 @@ test('a password login is remembered without asking an oauth account to verify i
     expect($user->fresh()->loginMethod())->toBe('password')
         ->and($user->fresh()->hasVerifiedEmail())->toBeTrue();
 });
+
+test('the dashboard shows the provider used to log in', function (): void {
+    $owner = User::factory()->create(['password' => null, 'discord_id' => '111', 'patreon_id' => '999', 'last_login_provider' => 'patreon']);
+    Profile::factory()->create(['user_id' => $owner->id]);
+
+    $this->actingAs($owner)->get('/admin')
+        ->assertSuccessful()
+        ->assertSee('Patreon Account')
+        ->assertSee('Connected via Patreon OAuth')
+        ->assertDontSee('Discord Account');
+});
