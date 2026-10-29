@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Http\Controllers\Auth\OAuthController;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasOne;
@@ -28,6 +29,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'username',
         'password',
         'oauth_tokens',
+        'last_login_provider',
     ];
 
     protected $hidden = [
@@ -45,24 +47,29 @@ class User extends Authenticatable implements MustVerifyEmail
         ];
     }
 
+    /**
+     * @return list<string>
+     */
+    public function linkedProviders(): array
+    {
+        return array_values(array_filter(
+            OAuthController::PROVIDERS,
+            fn (string $provider): bool => $this->{$provider.'_id'} !== null,
+        ));
+    }
+
     public function loginMethod(): ?string
     {
-        return match (true) {
-            $this->discord_id !== null => 'discord',
-            $this->google_id !== null => 'google',
-            $this->github_id !== null => 'github',
-            $this->twitch_id !== null => 'twitch',
-            $this->steam_id !== null => 'steam',
-            $this->spotify_id !== null => 'spotify',
-            $this->patreon_id !== null => 'patreon',
-            $this->password !== null => 'password',
-            default => null,
-        };
+        $methods = [...$this->linkedProviders(), ...($this->password !== null ? ['password'] : [])];
+
+        return in_array($this->last_login_provider, $methods, true)
+            ? $this->last_login_provider
+            : ($methods[0] ?? null);
     }
 
     public function hasVerifiedEmail(): bool
     {
-        return $this->email_verified_at !== null || $this->loginMethod() !== 'password';
+        return $this->email_verified_at !== null || $this->password === null || $this->linkedProviders() !== [];
     }
 
     public function profile(): HasOne

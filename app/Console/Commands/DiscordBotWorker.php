@@ -280,7 +280,9 @@ class DiscordBotWorker extends Command
                 $attributes['avatar_url'] = $avatar;
             }
 
-            $profile->user?->update(['avatar' => $avatar]);
+            if ($profile->user?->loginMethod() === 'discord') {
+                $profile->user->update(['avatar' => $avatar]);
+            }
         }
 
         if ($status === 'offline' && $profile->custom_discord_status !== 'offline') {

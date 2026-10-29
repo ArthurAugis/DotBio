@@ -204,3 +204,25 @@ test('ownership can go to an admin without discord', function (): void {
         'use_discord_avatar' => false,
     ]);
 });
+
+test('the team page shows the provider used for the last login, not the first linked one', function (): void {
+    $owner = User::factory()->create(['password' => null, 'discord_id' => '111', 'patreon_id' => '999']);
+    $page = Profile::factory()->create(['user_id' => $owner->id]);
+    fakeOAuthUser('patreon', '999', ['email' => $owner->email]);
+
+    $this->get('/auth/patreon/callback')->assertRedirect(route('admin.dashboard'));
+
+    expect($owner->fresh()->loginMethod())->toBe('patreon');
+    $this->get('/admin/team')->assertSee('· Patreon')->assertDontSee('· Discord');
+});
+
+test('a password login is remembered without asking an oauth account to verify its email', function (): void {
+    $user = User::factory()->unverified()->create(['discord_id' => '111']);
+    Profile::factory()->create(['user_id' => $user->id]);
+
+    $this->post('/login', ['email' => $user->email, 'password' => 'password'])
+        ->assertRedirect(route('admin.dashboard'));
+
+    expect($user->fresh()->loginMethod())->toBe('password')
+        ->and($user->fresh()->hasVerifiedEmail())->toBeTrue();
+});

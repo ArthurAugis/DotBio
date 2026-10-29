@@ -83,6 +83,7 @@ class OAuthController extends Controller
             'email' => $email,
             'avatar' => $account->getAvatar(),
             'username' => $usernameTaken ? $user->username : $nickname,
+            'last_login_provider' => $provider,
         ]);
 
         if (in_array($provider, ProviderAvatars::TOKEN_PROVIDERS, true) && $refreshToken = $account->refreshToken ?? null) {

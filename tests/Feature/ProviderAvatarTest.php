@@ -139,3 +139,12 @@ test('the owner login replaces a stale provider avatar on the page', function ()
 
     expect($page->fresh()->avatar_url)->toBe('https://new.example.com/a.png');
 });
+
+test('the avatar refresh follows the last used provider even when discord is linked', function (): void {
+    Http::fake(['api.github.com/user/42' => Http::response(['avatar_url' => 'https://new.example.com/a.png'])]);
+    $page = ownerWith('github', ['discord_id' => '111', 'last_login_provider' => 'github']);
+
+    $this->artisan('avatars:refresh')->assertSuccessful();
+
+    expect($page->fresh()->avatar_url)->toBe('https://new.example.com/a.png');
+});

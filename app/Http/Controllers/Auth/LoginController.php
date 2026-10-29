@@ -37,6 +37,7 @@ class LoginController extends Controller
                 ->withErrors(['email' => 'These credentials do not match our records.']);
         }
 
+        $request->user()->update(['last_login_provider' => 'password']);
         $request->session()->regenerate();
 
         return redirect()->intended(route('admin.dashboard'));
