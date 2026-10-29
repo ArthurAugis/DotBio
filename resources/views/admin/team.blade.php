@@ -96,10 +96,10 @@
                         <div class="flex items-center gap-3 min-w-0">
                             <img src="{{ $admin->avatar ?? 'https://api.dicebear.com/7.x/bottts/svg?seed='.urlencode($admin->name) }}" alt="" class="w-9 h-9 rounded-full border border-white/10 object-cover shrink-0">
                             <div class="min-w-0">
-                                <p class="text-sm font-semibold text-white truncate">
-                                    {{ $admin->name }}
+                                <p class="flex items-center gap-2 text-sm font-semibold text-white">
+                                    <span class="truncate">{{ $admin->name }}</span>
                                     @if($admin->id === $ownerId)
-                                        <span class="ml-1 text-[10px] uppercase tracking-wide text-purple-300 bg-purple-500/10 border border-purple-500/30 px-1.5 py-0.5 rounded-md">Owner</span>
+                                        <span class="shrink-0 text-[10px] leading-none uppercase tracking-wide text-purple-300 bg-purple-500/10 border border-purple-500/30 px-1.5 py-1 rounded-md">Owner</span>
                                     @endif
                                 </p>
                                 <p class="text-xs text-zinc-400 truncate">{{ $admin->email }} · {{ ucfirst($admin->loginMethod()) }}</p>
