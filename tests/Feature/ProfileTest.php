@@ -95,3 +95,17 @@ test('an authenticated user reaches the customize page', function (): void {
 
     $this->actingAs($profile->user)->get('/admin/customize')->assertSuccessful();
 });
+
+test('the mute button shows even when the audio player is hidden', function (): void {
+    Profile::factory()->create([
+        'audio_enabled' => true,
+        'audio_url' => 'uploads/audio/song.mp3',
+        'show_audio_player' => false,
+        'show_mute_icon' => true,
+    ]);
+
+    $this->get('/')
+        ->assertSuccessful()
+        ->assertSee('toggleMute()', false)
+        ->assertDontSee('x-show="profile.show_audio_player"', false);
+});

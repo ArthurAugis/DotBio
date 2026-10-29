@@ -1,4 +1,4 @@
-<div x-cloak x-show="profile.show_audio_player" x-data="{ hovered: false }"
+<div x-data="{ hovered: false }"
      @mouseenter="hovered = true"
      @mouseleave="hovered = false"
      class="flex items-center gap-1 {{ ($reverse ?? false) ? 'flex-row-reverse' : '' }}">
